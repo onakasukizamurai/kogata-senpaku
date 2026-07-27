@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=41" />
+  <link rel="stylesheet" href="styles.css?v=42" />
 </head>
 <body>
   <div class="rotate-hint" id="rotateHint">
@@ -100,14 +100,14 @@
           <div class="panel" id="resultPanel">
             <p class="eyebrow" id="resultEyebrow">結果</p>
             <h2 id="resultTitle">コース完了</h2>
-            <p class="lead" id="resultLead"></p>
-            <p class="score-breakdown hidden" id="scoreBreakdown"></p>
-            <dl class="score" id="scoreList"></dl>
-            <div class="result-actions">
+            <div class="result-actions result-actions-top">
               <button type="button" class="btn primary" id="retryBtn">もう一度</button>
               <button type="button" class="btn secondary" id="changeCourseBtn">コースを変更</button>
               <button type="button" class="btn ghost" id="resultEndBtn">終了</button>
             </div>
+            <p class="lead" id="resultLead"></p>
+            <p class="score-breakdown hidden" id="scoreBreakdown"></p>
+            <dl class="score" id="scoreList"></dl>
           </div>
         </div>
       </main>
@@ -135,6 +135,6 @@
       </aside>
     </div>
   </div>
-  <script src="game.js?v=38"></script>
+  <script src="game.js?v=39"></script>
 </body>
 </html>
