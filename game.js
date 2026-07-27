@@ -26,6 +26,7 @@
     startPracticeBtn: document.getElementById("startPracticeBtn"),
     startEndlessBtn: document.getElementById("startEndlessBtn"),
     retryBtn: document.getElementById("retryBtn"),
+    changeCourseBtn: document.getElementById("changeCourseBtn"),
     resultEndBtn: document.getElementById("resultEndBtn"),
     resetBtn: document.getElementById("resetBtn"),
     endBtn: document.getElementById("endBtn"),
@@ -2029,6 +2030,7 @@
   els.startPracticeBtn.addEventListener("click", () => startGame("practice"));
   els.startEndlessBtn.addEventListener("click", () => startGame("endless"));
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
+  els.changeCourseBtn.addEventListener("click", goHome);
   els.resultEndBtn.addEventListener("click", goHome);
   els.endBtn.addEventListener("click", goHome);
   els.tutorialNextBtn.addEventListener("click", advanceTutorial);

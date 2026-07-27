@@ -445,6 +445,7 @@ html, body {
   gap: 0.55rem;
 }
 
+.result-actions .btn.secondary,
 .result-actions .btn.ghost {
   width: 100%;
 }
