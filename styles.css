@@ -345,6 +345,15 @@ html, body {
   margin: 0.85rem 0 0.9rem;
 }
 
+.result-actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.result-actions .btn.ghost {
+  width: 100%;
+}
+
 .btn.ghost {
   background: transparent;
   color: var(--foam);

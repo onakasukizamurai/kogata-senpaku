@@ -26,6 +26,7 @@
     startPracticeBtn: document.getElementById("startPracticeBtn"),
     startEndlessBtn: document.getElementById("startEndlessBtn"),
     retryBtn: document.getElementById("retryBtn"),
+    resultEndBtn: document.getElementById("resultEndBtn"),
     resetBtn: document.getElementById("resetBtn"),
     endBtn: document.getElementById("endBtn"),
     resultEyebrow: document.getElementById("resultEyebrow"),
@@ -1836,6 +1837,7 @@
   els.startPracticeBtn.addEventListener("click", () => startGame("practice"));
   els.startEndlessBtn.addEventListener("click", () => startGame("endless"));
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
+  els.resultEndBtn.addEventListener("click", goHome);
   els.endBtn.addEventListener("click", goHome);
   els.resetBtn.addEventListener("click", () => {
     const onStartScreen = !els.startOverlay.classList.contains("hidden");

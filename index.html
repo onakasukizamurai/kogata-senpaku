@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=28" />
+  <link rel="stylesheet" href="styles.css?v=29" />
 </head>
 <body>
   <div class="rotate-hint" id="rotateHint">
@@ -65,7 +65,10 @@
             <h2 id="resultTitle">コース完了</h2>
             <p class="lead" id="resultLead"></p>
             <dl class="score" id="scoreList"></dl>
-            <button type="button" class="btn primary" id="retryBtn">もう一度</button>
+            <div class="result-actions">
+              <button type="button" class="btn primary" id="retryBtn">もう一度</button>
+              <button type="button" class="btn ghost" id="resultEndBtn">終了</button>
+            </div>
           </div>
         </div>
       </main>
@@ -93,6 +96,6 @@
       </aside>
     </div>
   </div>
-  <script src="game.js?v=30"></script>
+  <script src="game.js?v=31"></script>
 </body>
 </html>
