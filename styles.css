@@ -373,6 +373,13 @@ html, body {
   background: var(--sea-light);
 }
 
+.seo-note {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
 .score {
   display: grid;
   gap: 0.45rem;
@@ -868,6 +875,11 @@ html, body {
   .tips li {
     font-size: 0.74rem;
     padding: 0.35rem 0.55rem 0.35rem 1rem;
+  }
+
+  .seo-note {
+    font-size: 0.7rem;
+    margin-top: 0.1rem;
   }
 
   .score {

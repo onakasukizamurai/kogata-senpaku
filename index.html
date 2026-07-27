@@ -5,13 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>小型船舶 蛇行練習</title>
+  <meta name="theme-color" content="#0a3f58" />
+  <title>小型船舶免許の蛇行練習｜ブイ通過の操船イメージ（無料）</title>
+  <meta name="description" content="小型船舶免許の実技「蛇行」をイメージした無料の操船練習。ブイを左右交互に通過し、試験形式の3ブイコースやエンドレスで感覚を身につけられます。スマホ・PC対応。" />
+  <meta name="keywords" content="小型船舶,小型船舶免許,蛇行,ブイ通過,実技練習,操船,ボート免許,操縦士" />
+  <meta name="author" content="小型船舶 蛇行練習" />
+  <link rel="canonical" href="https://onakasukizamurai.github.io/kogata-senpaku/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta property="og:url" content="https://onakasukizamurai.github.io/kogata-senpaku/" />
+  <meta property="og:title" content="小型船舶免許の蛇行練習｜ブイ通過の操船イメージ（無料）" />
+  <meta property="og:description" content="小型船舶免許の実技「蛇行」をイメージした無料の操船練習。ブイを左右交互に通過して、試験形式の感覚をつかめます。" />
+  <meta property="og:image" content="https://onakasukizamurai.github.io/kogata-senpaku/icon.png" />
+  <meta property="og:site_name" content="小型船舶 蛇行練習" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="小型船舶免許の蛇行練習｜ブイ通過の操船イメージ（無料）" />
+  <meta name="twitter:description" content="小型船舶免許の実技「蛇行」をイメージした無料の操船練習。ブイを左右交互に通過できます。" />
+  <meta name="twitter:image" content="https://onakasukizamurai.github.io/kogata-senpaku/icon.png" />
+
   <link rel="icon" type="image/png" href="icon.png" />
   <link rel="apple-touch-icon" href="icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=32" />
+  <link rel="stylesheet" href="styles.css?v=33" />
 </head>
 <body>
   <div class="rotate-hint" id="rotateHint">
@@ -53,20 +72,21 @@
         <canvas id="sea" aria-label="運転席からの前方視界"></canvas>
         <div class="overlay" id="startOverlay">
           <div class="panel">
-            <p class="eyebrow">実技イメージ練習</p>
-            <h2>ブイを左右交互に通過</h2>
+            <p class="eyebrow">小型船舶免許の実技イメージ</p>
+            <h2>蛇行・ブイ通過の操船練習</h2>
             <div class="mode-actions">
               <button type="button" class="btn primary" id="startPracticeBtn">３ブイコース（試験の形式）</button>
               <button type="button" class="btn secondary" id="startEndlessBtn">エンドレスコース</button>
             </div>
-            <p class="lead">運転席から前方を見て、大きめの川を操船します。左の上空図で位置も確認できます。モードを選んでスタートしてください。</p>
+            <p class="lead">小型船舶操縦士の実技で行う「蛇行」をイメージした、無料のブラウザ練習です。運転席から前方を見てブイを左右交互に通過し、操舵の感覚を身につけられます。正式な試験コースや採点の完全再現ではありません。</p>
             <ul class="tips">
               <li>スマホは横向きで操作（ハンドルをドラッグ）</li>
               <li>右のハンドルをドラッグ、または ← → で操舵</li>
               <li>スロットル、または ↑ ↓ で速力</li>
-              <li>３ブイコース（試験の形式）：ブイ3本を通過して採点（岸接触は0点）</li>
-              <li>エンドレスコース：失敗するまで続き、進んだ距離を競う（処理が重く、スマホだと途中で落ちることがあります）</li>
+              <li>３ブイコース：試験形式のブイ通過を採点（岸接触は0点）</li>
+              <li>エンドレスコース：失敗するまで距離を競う（処理が重く、スマホだと途中で落ちることがあります）</li>
             </ul>
+            <p class="seo-note">ボート免許・小型船舶免許の取得前に、ブイ通過や蛇行のイメージ確認としてご利用ください。</p>
           </div>
         </div>
         <div class="overlay hidden" id="resultOverlay">
