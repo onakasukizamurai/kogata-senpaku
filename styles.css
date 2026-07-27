@@ -424,7 +424,8 @@ html, body {
 }
 
 .overlay .btn.primary,
-.overlay .btn.secondary {
+.overlay .btn.secondary,
+.overlay .btn.ghost {
   border-radius: 1rem;
 }
 
