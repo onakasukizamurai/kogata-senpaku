@@ -32,6 +32,7 @@
     resultTitle: document.getElementById("resultTitle"),
     resultLead: document.getElementById("resultLead"),
     scoreList: document.getElementById("scoreList"),
+    resultPanel: document.getElementById("resultPanel"),
   };
 
   const BUOY_COUNT = 3;
@@ -642,10 +643,10 @@
       }
 
       els.resultEyebrow.textContent = eyebrow;
-      els.resultTitle.textContent = title;
-      els.resultLead.textContent = lead;
+      els.resultPanel.classList.add("endless-result");
+      els.resultTitle.textContent = `${Math.round(distanceM)} m`;
+      els.resultLead.textContent = `${title}。${lead}`;
       els.scoreList.innerHTML = `
-        <div><dt>進んだ距離</dt><dd>${Math.round(distanceM)} m</dd></div>
         <div><dt>自己ベスト</dt><dd>${Math.round(bestEndlessM)} m</dd></div>
         <div><dt>通過ブイ</dt><dd>${passes} 本</dd></div>
         <div><dt>所要時間</dt><dd>${elapsed.toFixed(1)} 秒</dd></div>
@@ -654,6 +655,8 @@
       updateHud();
       return;
     }
+
+    els.resultPanel.classList.remove("endless-result");
 
     let score = 0;
     let centerRank = "—";
