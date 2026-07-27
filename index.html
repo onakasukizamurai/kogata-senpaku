@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>小型船舶 蛇行練習</title>
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=27" />
+</head>
+<body>
+  <div class="rotate-hint" id="rotateHint">
+    <p>横向きにして遊んでください</p>
+  </div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <h1>小型船舶<span>蛇行練習</span></h1>
+      </div>
+      <div class="hud" id="hud">
+        <div class="hud-item"><span>速力</span><strong id="speedVal">0.0</strong><em>kt</em></div>
+        <div class="hud-item"><span>舵角</span><strong id="rudderVal">0</strong><em>°</em></div>
+        <div class="hud-item"><span>次の通過</span><strong id="nextSide">左</strong></div>
+        <div class="hud-item"><span id="passHudLabel">通過</span><strong id="passCount">0 / 3</strong><em id="passUnit"></em></div>
+        <div class="hud-item"><span id="penaltyHudLabel">減点</span><strong id="penaltyCount">0</strong></div>
+        <div class="hud-item"><span>経過</span><strong id="timeVal">0.0</strong><em>s</em></div>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="map-panel">
+        <div class="map-label">上空図</div>
+        <canvas id="map" aria-label="上から見たコース図"></canvas>
+      </aside>
+
+      <main class="stage">
+        <canvas id="sea" aria-label="運転席からの前方視界"></canvas>
+        <div class="overlay" id="startOverlay">
+          <div class="panel">
+            <p class="eyebrow">実技イメージ練習</p>
+            <h2>ブイを左右交互に通過</h2>
+            <div class="mode-actions">
+              <button type="button" class="btn primary" id="startPracticeBtn">３ブイコース（試験の形式）</button>
+              <button type="button" class="btn secondary" id="startEndlessBtn">エンドレスコース</button>
+            </div>
+            <p class="lead">運転席から前方を見て、大きめの川を操船します。左の上空図で位置も確認できます。モードを選んでスタートしてください。</p>
+            <ul class="tips">
+              <li>スマホは横向きで操作（ハンドルをドラッグ）</li>
+              <li>右のハンドルをドラッグ、または ← → で操舵</li>
+              <li>スロットル、または ↑ ↓ で速力</li>
+              <li>３ブイコース（試験の形式）：ブイ3本を通過して採点（岸接触は0点）</li>
+              <li>エンドレスコース：失敗するまで続き、進んだ距離を競う（処理が重く、スマホだと途中で落ちることがあります）</li>
+            </ul>
+          </div>
+        </div>
+        <div class="overlay hidden" id="resultOverlay">
+          <div class="panel">
+            <p class="eyebrow" id="resultEyebrow">結果</p>
+            <h2 id="resultTitle">コース完了</h2>
+            <p class="lead" id="resultLead"></p>
+            <dl class="score" id="scoreList"></dl>
+            <button type="button" class="btn primary" id="retryBtn">もう一度</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="helm">
+        <div class="wheel-block">
+          <div class="wheel-wrap" id="wheelWrap">
+            <canvas id="wheel" width="440" height="440" aria-label="操舵ハンドル"></canvas>
+            <div class="wheel-center" aria-hidden="true"></div>
+          </div>
+          <p class="hint">ハンドルを回す / ← →</p>
+        </div>
+
+        <div class="helm-bottom">
+          <div class="throttle-block">
+            <label for="throttle">スロットル</label>
+            <input type="range" id="throttle" min="0" max="100" value="35" />
+            <span id="throttleLabel">35%</span>
+          </div>
+          <div class="helm-actions">
+            <button type="button" class="btn ghost" id="resetBtn">リセット</button>
+            <button type="button" class="btn ghost" id="endBtn">終了</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <script src="game.js?v=29"></script>
+</body>
+</html>
