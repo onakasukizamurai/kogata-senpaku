@@ -488,13 +488,13 @@ html, body {
 
 .btn-start-hero {
   width: 100%;
-  max-width: 280px;
+  max-width: min(320px, 92vw);
   margin: 0 auto;
   display: block;
-  font-size: 1.35rem;
+  font-size: clamp(1.5rem, 4.2vw, 1.8rem);
   font-weight: 800;
-  letter-spacing: 0.14em;
-  padding: 1rem 1.25rem;
+  letter-spacing: 0.12em;
+  padding: 1.1rem 1.4rem;
   border-radius: 1rem;
 }
 
@@ -918,6 +918,14 @@ html, body {
     min-height: 2.8rem;
   }
 
+  .overlay .btn.btn-start-hero {
+    font-size: clamp(1.6rem, 7vw, 2.05rem);
+    letter-spacing: 0.1em;
+    padding: 1.05rem 1.35rem;
+    min-height: 3.35rem;
+    max-width: min(360px, 90vw);
+  }
+
   .lead {
     font-size: 0.78rem;
     line-height: 1.4;
@@ -1007,6 +1015,12 @@ html, body {
     font-size: 1rem;
     padding: 0.7rem 0.9rem;
     min-height: 2.6rem;
+  }
+
+  .overlay .btn.btn-start-hero {
+    font-size: 1.5rem;
+    min-height: 3.1rem;
+    padding: 0.9rem 1.2rem;
   }
 }
 
