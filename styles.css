@@ -295,7 +295,8 @@ html, body {
   line-height: 1.3;
 }
 
-.panel.endless-result h2 {
+.panel.hero-result h2,
+.panel.practice-result h2 {
   font-size: clamp(2.6rem, 9vw, 3.6rem);
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -305,11 +306,22 @@ html, body {
   line-height: 1.05;
 }
 
-.panel.endless-result .lead {
+.panel.practice-result h2::after {
+  content: " / 100";
+  font-size: 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-left: 0.15em;
+  vertical-align: 0.18em;
+}
+
+.panel.hero-result .lead,
+.panel.practice-result .lead {
   margin-bottom: 0.85rem;
 }
 
-.panel.endless-result .score div:first-child {
+.panel.hero-result .score div:first-child {
   font-weight: 600;
 }
 
@@ -806,7 +818,8 @@ html, body {
     margin-bottom: 0.3rem;
   }
 
-  .panel.endless-result h2 {
+  .panel.hero-result h2,
+  .panel.practice-result h2 {
     font-size: clamp(2.2rem, 12vh, 3.2rem);
     margin: 0.05rem 0 0.35rem;
   }

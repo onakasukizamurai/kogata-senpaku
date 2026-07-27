@@ -47,8 +47,8 @@
   const BUOY_SPACING = 360;
   const BUOY_RADIUS = 14;
   const PASS_GATE = 180;
-  const GOAL_AFTER = 980;
-  const FIRST_BUOY_OFFSET = 880;
+  const GOAL_AFTER = 420;
+  const FIRST_BUOY_OFFSET = 480;
   const ENDLESS_FIRST_BUOY_OFFSET = 420;
   const ENDLESS_AHEAD = 8;
   const ENDLESS_KM_EVERY = 2000;
@@ -669,7 +669,8 @@
       }
 
       els.resultEyebrow.textContent = eyebrow;
-      els.resultPanel.classList.add("endless-result");
+      els.resultPanel.classList.add("hero-result");
+      els.resultPanel.classList.remove("practice-result");
       els.resultTitle.textContent = `${Math.round(distanceM)} m`;
       els.resultLead.textContent = `${title}。${lead}`;
       if (els.scoreBreakdown) {
@@ -686,7 +687,8 @@
       return;
     }
 
-    els.resultPanel.classList.remove("endless-result");
+    els.resultPanel.classList.remove("hero-result");
+    els.resultPanel.classList.add("practice-result");
 
     let score = 0;
     let centerRank = "—";
@@ -747,14 +749,13 @@
     }
 
     els.resultEyebrow.textContent = eyebrow;
-    els.resultTitle.textContent = title;
-    els.resultLead.textContent = lead;
+    els.resultTitle.textContent = `${score}`;
+    els.resultLead.textContent = `${title}。${lead}`;
     if (els.scoreBreakdown) {
       els.scoreBreakdown.textContent = buildScoreBreakdown(timePenalty, centerPenalty);
       els.scoreBreakdown.classList.remove("hidden");
     }
     els.scoreList.innerHTML = `
-      <div><dt>総合点</dt><dd>${score} / 100</dd></div>
       <div><dt>正しい通過</dt><dd>${passes} / ${BUOY_COUNT}</dd></div>
       <div><dt>接触</dt><dd>${contacts} 回</dd></div>
       <div><dt>逆側通過</dt><dd>${wrongSides} 回</dd></div>
