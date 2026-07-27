@@ -44,7 +44,7 @@
   const FIRST_BUOY_OFFSET = 880;
   const ENDLESS_FIRST_BUOY_OFFSET = 420;
   const ENDLESS_AHEAD = 8;
-  const ENDLESS_KM_EVERY = 1000;
+  const ENDLESS_KM_EVERY = 2000;
   let nextBuoySeq = 0;
   const SCENERY_EVERY = 5;
   const COURSE_X = 0;
