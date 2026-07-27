@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=34" />
+  <link rel="stylesheet" href="styles.css?v=35" />
 </head>
 <body>
   <div class="rotate-hint" id="rotateHint">
@@ -74,25 +74,25 @@
           <div class="panel start-intro-panel" id="startIntroPanel">
             <p class="eyebrow">小型船舶免許の実技イメージ</p>
             <h2>蛇行・ブイ通過の操船練習</h2>
-            <p class="lead lead-compact">小型船舶操縦士の実技「蛇行」をイメージした、無料のブラウザ練習です。</p>
-            <button type="button" class="btn primary btn-start-hero" id="playStartBtn">START</button>
-            <p class="seo-note">ボート免許・小型船舶免許の取得前に、ブイ通過や蛇行のイメージ確認としてご利用ください。</p>
-          </div>
-          <div class="panel start-mode-panel hidden" id="startModePanel">
-            <p class="eyebrow">コースを選ぶ</p>
-            <h2>ブイを左右交互に通過</h2>
-            <div class="mode-actions">
-              <button type="button" class="btn primary" id="startPracticeBtn">３ブイコース（試験の形式）</button>
-              <button type="button" class="btn secondary" id="startEndlessBtn">エンドレスコース</button>
-            </div>
-            <p class="lead">運転席から前方を見て操船します。左の上空図で位置も確認できます。正式な試験コースや採点の完全再現ではありません。</p>
-            <ul class="tips">
+            <p class="lead lead-compact">小型船舶操縦士の実技「蛇行」をイメージした、無料のブラウザ練習です。運転席から前方を見てブイを左右交互に通過し、操舵の感覚を身につけられます。</p>
+            <ul class="tips tips-intro">
               <li>スマホは横向きで操作（ハンドルをドラッグ）</li>
               <li>右のハンドルをドラッグ、または ← → で操舵</li>
               <li>スロットル、または ↑ ↓ で速力</li>
               <li>３ブイコース：試験形式のブイ通過を採点（岸接触は0点）</li>
-              <li>エンドレスコース：失敗するまで距離を競う（処理が重く、スマホだと途中で落ちることがあります）</li>
+              <li>エンドレスコース：失敗するまで進んだ距離を競う</li>
             </ul>
+            <p class="seo-note">正式な試験コースや採点の完全再現ではありません。ボート免許・小型船舶免許の取得前に、ブイ通過や蛇行のイメージ確認としてご利用ください。</p>
+            <button type="button" class="btn primary btn-start-hero" id="playStartBtn">START</button>
+          </div>
+          <div class="panel start-mode-panel hidden" id="startModePanel">
+            <p class="eyebrow">コース選択</p>
+            <h2>どちらで練習しますか？</h2>
+            <div class="mode-actions mode-actions-simple">
+              <button type="button" class="btn primary" id="startPracticeBtn">３ブイコース（試験の形式）</button>
+              <button type="button" class="btn secondary" id="startEndlessBtn">エンドレスコース</button>
+            </div>
+            <p class="mode-note">エンドレスコースは処理が重く、スマホだと途中で落ちることがあります。</p>
             <button type="button" class="btn ghost" id="startBackBtn">戻る</button>
           </div>
         </div>

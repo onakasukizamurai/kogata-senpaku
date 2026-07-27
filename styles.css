@@ -455,19 +455,52 @@ html, body {
   margin-bottom: 0.5rem;
 }
 
+.start-intro-panel .tips-intro {
+  text-align: left;
+  max-width: 26rem;
+  margin: 0 auto 0.75rem;
+}
+
+.start-intro-panel .seo-note {
+  text-align: left;
+  max-width: 26rem;
+  margin: 0 auto 1rem;
+}
+
 .lead-compact {
-  margin-bottom: 1.1rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+  max-width: 26rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .btn-start-hero {
   width: 100%;
   max-width: 280px;
-  margin: 0 auto 1rem;
+  margin: 0 auto;
   display: block;
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: 0.22em;
   padding: 1rem 1.25rem;
+}
+
+.start-mode-panel h2 {
+  margin-bottom: 0.75rem;
+}
+
+.mode-actions-simple {
+  margin-top: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.mode-note {
+  margin: 0 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .start-mode-panel .btn.ghost#startBackBtn {
