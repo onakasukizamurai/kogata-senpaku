@@ -714,6 +714,11 @@ html, body {
     margin-bottom: 0.3rem;
   }
 
+  .panel.endless-result h2 {
+    font-size: clamp(2.2rem, 12vh, 3.2rem);
+    margin: 0.05rem 0 0.35rem;
+  }
+
   .overlay .btn.primary,
   .overlay .btn.secondary {
     font-size: 1.05rem;
