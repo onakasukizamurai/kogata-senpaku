@@ -447,6 +447,38 @@ html, body {
   margin: 0.85rem 0 0.9rem;
 }
 
+.start-intro-panel {
+  text-align: center;
+}
+
+.start-intro-panel h2 {
+  margin-bottom: 0.5rem;
+}
+
+.lead-compact {
+  margin-bottom: 1.1rem;
+}
+
+.btn-start-hero {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 1rem;
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  padding: 1rem 1.25rem;
+}
+
+.start-mode-panel .btn.ghost#startBackBtn {
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.panel.hidden {
+  display: none;
+}
+
 .result-actions {
   display: grid;
   gap: 0.55rem;

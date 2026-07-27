@@ -22,6 +22,10 @@
     throttle: document.getElementById("throttle"),
     throttleLabel: document.getElementById("throttleLabel"),
     startOverlay: document.getElementById("startOverlay"),
+    startIntroPanel: document.getElementById("startIntroPanel"),
+    startModePanel: document.getElementById("startModePanel"),
+    playStartBtn: document.getElementById("playStartBtn"),
+    startBackBtn: document.getElementById("startBackBtn"),
     resultOverlay: document.getElementById("resultOverlay"),
     startPracticeBtn: document.getElementById("startPracticeBtn"),
     startEndlessBtn: document.getElementById("startEndlessBtn"),
@@ -1971,6 +1975,22 @@
     if (els.tutorialSpotlight) els.tutorialSpotlight.style.opacity = "0";
   }
 
+  function showStartIntro() {
+    els.startIntroPanel?.classList.remove("hidden");
+    els.startModePanel?.classList.add("hidden");
+  }
+
+  function showStartMode() {
+    els.startIntroPanel?.classList.add("hidden");
+    els.startModePanel?.classList.remove("hidden");
+  }
+
+  function openStartOverlay(phase = "intro") {
+    els.startOverlay.classList.remove("hidden");
+    if (phase === "mode") showStartMode();
+    else showStartIntro();
+  }
+
   function startGame(mode) {
     if (mode === "practice" || mode === "endless") gameMode = mode;
     hideTutorial();
@@ -1992,7 +2012,7 @@
     running = false;
     finished = false;
     els.resultOverlay.classList.add("hidden");
-    els.startOverlay.classList.remove("hidden");
+    openStartOverlay("mode");
     updateHud();
     drawWheel();
     render();
@@ -2027,6 +2047,8 @@
     els.throttleLabel.textContent = `${els.throttle.value}%`;
   });
 
+  els.playStartBtn.addEventListener("click", showStartMode);
+  els.startBackBtn.addEventListener("click", showStartIntro);
   els.startPracticeBtn.addEventListener("click", () => startGame("practice"));
   els.startEndlessBtn.addEventListener("click", () => startGame("endless"));
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
@@ -2054,6 +2076,7 @@
   buildCourse();
   resize();
   resetRun(true);
+  showStartIntro();
   drawWheel();
   render();
   renderMap();
