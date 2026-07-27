@@ -2006,13 +2006,13 @@
     }
   }
 
-  function goHome() {
+  function goHome(phase = "intro") {
     hideTutorial();
     resetRun(true);
     running = false;
     finished = false;
     els.resultOverlay.classList.add("hidden");
-    openStartOverlay("mode");
+    openStartOverlay(phase);
     updateHud();
     drawWheel();
     render();
@@ -2052,9 +2052,9 @@
   els.startPracticeBtn.addEventListener("click", () => startGame("practice"));
   els.startEndlessBtn.addEventListener("click", () => startGame("endless"));
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
-  els.changeCourseBtn.addEventListener("click", goHome);
-  els.resultEndBtn.addEventListener("click", goHome);
-  els.endBtn.addEventListener("click", goHome);
+  els.changeCourseBtn.addEventListener("click", () => goHome("mode"));
+  els.resultEndBtn.addEventListener("click", () => goHome("intro"));
+  els.endBtn.addEventListener("click", () => goHome("intro"));
   els.tutorialNextBtn.addEventListener("click", advanceTutorial);
   els.resetBtn.addEventListener("click", () => {
     const onStartScreen = !els.startOverlay.classList.contains("hidden");
