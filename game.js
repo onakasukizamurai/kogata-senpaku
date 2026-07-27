@@ -32,8 +32,15 @@
     resultEyebrow: document.getElementById("resultEyebrow"),
     resultTitle: document.getElementById("resultTitle"),
     resultLead: document.getElementById("resultLead"),
+    scoreBreakdown: document.getElementById("scoreBreakdown"),
     scoreList: document.getElementById("scoreList"),
     resultPanel: document.getElementById("resultPanel"),
+    tutorialOverlay: document.getElementById("tutorialOverlay"),
+    tutorialSpotlight: document.getElementById("tutorialSpotlight"),
+    tutorialStepLabel: document.getElementById("tutorialStepLabel"),
+    tutorialTitle: document.getElementById("tutorialTitle"),
+    tutorialBody: document.getElementById("tutorialBody"),
+    tutorialNextBtn: document.getElementById("tutorialNextBtn"),
   };
 
   const BUOY_COUNT = 3;
@@ -54,6 +61,7 @@
   const MAX_WHEEL = 540;
   const MAX_SPEED = 9.5;
   const ENDLESS_BEST_KEY = "smallcraft-endless-best-m";
+  const TUTORIAL_KEY = "smallcraft-tutorial-done";
 
   const keys = new Set();
   let running = false;
@@ -65,6 +73,8 @@
   let failReason = null;
   let distanceM = 0;
   let bestEndlessM = 0;
+  let tutorialActive = false;
+  let tutorialStep = 0;
   try {
     bestEndlessM = Number(localStorage.getItem(ENDLESS_BEST_KEY) || 0) || 0;
   } catch (_) {
@@ -662,6 +672,10 @@
       els.resultPanel.classList.add("endless-result");
       els.resultTitle.textContent = `${Math.round(distanceM)} m`;
       els.resultLead.textContent = `${title}。${lead}`;
+      if (els.scoreBreakdown) {
+        els.scoreBreakdown.textContent = "";
+        els.scoreBreakdown.classList.add("hidden");
+      }
       els.scoreList.innerHTML = `
         <div><dt>自己ベスト</dt><dd>${Math.round(bestEndlessM)} m</dd></div>
         <div><dt>通過ブイ</dt><dd>${passes} 本</dd></div>
@@ -679,6 +693,8 @@
     let title = "コース完了";
     let eyebrow = "結果";
     let lead = "ブイをすべて通過しました。ハンドル操作の感覚を体に覚えさせましょう。";
+    let timePenalty = 0;
+    let centerPenalty = 0;
 
     if (bankCrash) {
       score = 0;
@@ -687,8 +703,7 @@
       lead = "岸にぶつかると0点です。川の中央寄りを意識して操船しましょう。";
       centerRank = "岸接触";
     } else {
-      const timePenalty = Math.max(0, elapsed - 55) * 0.4;
-      let centerPenalty = 0;
+      timePenalty = Math.max(0, elapsed - 55) * 0.4;
       if (goalCenterOffset <= GOAL_CENTER_GOOD) {
         centerPenalty = 0;
         centerRank = "ほぼ中心";
@@ -734,6 +749,10 @@
     els.resultEyebrow.textContent = eyebrow;
     els.resultTitle.textContent = title;
     els.resultLead.textContent = lead;
+    if (els.scoreBreakdown) {
+      els.scoreBreakdown.textContent = buildScoreBreakdown(timePenalty, centerPenalty);
+      els.scoreBreakdown.classList.remove("hidden");
+    }
     els.scoreList.innerHTML = `
       <div><dt>総合点</dt><dd>${score} / 100</dd></div>
       <div><dt>正しい通過</dt><dd>${passes} / ${BUOY_COUNT}</dd></div>
@@ -1812,17 +1831,161 @@
     requestAnimationFrame(loop);
   }
 
-  function startGame(mode) {
-    if (mode === "practice" || mode === "endless") gameMode = mode;
-    resetRun();
-    resize();
-    els.startOverlay.classList.add("hidden");
-    els.resultOverlay.classList.add("hidden");
+  function buildScoreBreakdown(timePenalty, centerPenalty) {
+    if (bankCrash) return "減点の内訳：岸接触のため総合点は 0 点です。";
+    const parts = [];
+    if (contacts > 0) parts.push(`接触×${contacts} −${contacts * 18}`);
+    if (wrongSides > 0) parts.push(`逆側×${wrongSides} −${wrongSides * 22}`);
+    if (widePasses > 0) parts.push(`離れすぎ×${widePasses} −${widePasses * 8}`);
+    if (centerPenalty >= 0.5) parts.push(`ゴール外側 −${Math.round(centerPenalty)}`);
+    if (timePenalty >= 0.5) parts.push(`時間 −${Math.round(timePenalty)}`);
+    if (!parts.length) return "減点の内訳：なし（満点に近い走りです）。";
+    return `減点の内訳：${parts.join("、")}。`;
+  }
+
+  function tutorialSeen() {
+    try {
+      return localStorage.getItem(TUTORIAL_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function markTutorialSeen() {
+    try {
+      localStorage.setItem(TUTORIAL_KEY, "1");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  const TUTORIAL_STEPS = [
+    {
+      title: "次は左（または右）",
+      body: "上の「次の通過」を見てください。ブイはその側を通ります。左右交互に進みます。",
+      target: () => els.nextSide?.closest(".hud-item") || els.nextSide,
+    },
+    {
+      title: "ハンドルをここ",
+      body: "右の白いハンドルをドラッグして操舵します。PCなら ← → キーでも回せます。",
+      target: () => wheelWrap,
+    },
+    {
+      title: "準備OK",
+      body: "スロットルで速力を変えられます。最初はゆっくりで、ブイの指定側を通りましょう。",
+      target: () => els.throttle?.closest(".throttle-block") || els.throttle,
+    },
+  ];
+
+  function placeTutorialSpotlight(el) {
+    const spot = els.tutorialSpotlight;
+    if (!spot || !el) {
+      if (spot) spot.style.opacity = "0";
+      return;
+    }
+    const r = el.getBoundingClientRect();
+    const pad = 10;
+    spot.style.opacity = "1";
+    spot.style.left = `${Math.max(4, r.left - pad)}px`;
+    spot.style.top = `${Math.max(4, r.top - pad)}px`;
+    spot.style.width = `${r.width + pad * 2}px`;
+    spot.style.height = `${r.height + pad * 2}px`;
+  }
+
+  function placeTutorialCard(el) {
+    const card = els.tutorialOverlay?.querySelector(".tutorial-card");
+    if (!card) return;
+    card.style.left = "";
+    card.style.top = "";
+    card.style.right = "";
+    card.style.bottom = "";
+    card.style.transform = "";
+
+    if (!el) {
+      card.style.left = "50%";
+      card.style.top = "50%";
+      card.style.transform = "translate(-50%, -50%)";
+      return;
+    }
+
+    const r = el.getBoundingClientRect();
+    const cardW = Math.min(320, window.innerWidth - 24);
+    const preferBelow = r.bottom + 160 < window.innerHeight;
+    let left = clamp(r.left + r.width / 2 - cardW / 2, 12, window.innerWidth - cardW - 12);
+    card.style.width = `${cardW}px`;
+    card.style.left = `${left}px`;
+    if (preferBelow) {
+      card.style.top = `${Math.min(window.innerHeight - 140, r.bottom + 14)}px`;
+    } else {
+      card.style.top = `${Math.max(12, r.top - 150)}px`;
+    }
+  }
+
+  function showTutorialStep() {
+    const step = TUTORIAL_STEPS[tutorialStep];
+    if (!step || !els.tutorialOverlay) return;
+    els.tutorialOverlay.classList.remove("hidden");
+    els.tutorialStepLabel.textContent = `${tutorialStep + 1} / ${TUTORIAL_STEPS.length}`;
+    els.tutorialTitle.textContent = step.title;
+    els.tutorialBody.textContent = step.body;
+    els.tutorialNextBtn.textContent =
+      tutorialStep >= TUTORIAL_STEPS.length - 1 ? "はじめる" : "次へ";
+    const target = step.target();
+    requestAnimationFrame(() => {
+      placeTutorialSpotlight(target);
+      placeTutorialCard(target);
+    });
+  }
+
+  function beginTutorial() {
+    tutorialActive = true;
+    tutorialStep = 0;
+    running = false;
+    showTutorialStep();
+  }
+
+  function advanceTutorial() {
+    if (!tutorialActive) return;
+    tutorialStep += 1;
+    if (tutorialStep >= TUTORIAL_STEPS.length) {
+      endTutorial();
+      return;
+    }
+    showTutorialStep();
+  }
+
+  function endTutorial() {
+    tutorialActive = false;
+    markTutorialSeen();
+    if (els.tutorialOverlay) els.tutorialOverlay.classList.add("hidden");
+    if (els.tutorialSpotlight) els.tutorialSpotlight.style.opacity = "0";
     running = true;
     lastTs = 0;
   }
 
+  function hideTutorial() {
+    tutorialActive = false;
+    if (els.tutorialOverlay) els.tutorialOverlay.classList.add("hidden");
+    if (els.tutorialSpotlight) els.tutorialSpotlight.style.opacity = "0";
+  }
+
+  function startGame(mode) {
+    if (mode === "practice" || mode === "endless") gameMode = mode;
+    hideTutorial();
+    resetRun();
+    resize();
+    els.startOverlay.classList.add("hidden");
+    els.resultOverlay.classList.add("hidden");
+    lastTs = 0;
+    if (!tutorialSeen()) {
+      beginTutorial();
+    } else {
+      running = true;
+    }
+  }
+
   function goHome() {
+    hideTutorial();
     resetRun(true);
     running = false;
     finished = false;
@@ -1839,12 +2002,14 @@
     resize();
     render();
     renderMap();
+    if (tutorialActive) showTutorialStep();
   });
   window.addEventListener("orientationchange", () => {
     setTimeout(() => {
       resize();
       render();
       renderMap();
+      if (tutorialActive) showTutorialStep();
     }, 120);
   });
 
@@ -1865,6 +2030,7 @@
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
   els.resultEndBtn.addEventListener("click", goHome);
   els.endBtn.addEventListener("click", goHome);
+  els.tutorialNextBtn.addEventListener("click", advanceTutorial);
   els.resetBtn.addEventListener("click", () => {
     const onStartScreen = !els.startOverlay.classList.contains("hidden");
     resetRun();

@@ -202,6 +202,74 @@ html, body {
   display: none;
 }
 
+.tutorial {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.tutorial.hidden {
+  display: none;
+}
+
+.tutorial-dim {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.tutorial-spotlight {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 9999px rgba(4, 16, 28, 0.62),
+    0 0 0 2px rgba(240, 162, 2, 0.9);
+  background: transparent;
+  pointer-events: none;
+  transition: left 0.2s ease, top 0.2s ease, width 0.2s ease, height 0.2s ease;
+  opacity: 0;
+  z-index: 61;
+}
+
+.tutorial-card {
+  position: fixed;
+  z-index: 62;
+  width: min(320px, calc(100vw - 24px));
+  padding: 0.95rem 1rem 1rem;
+  background: rgba(8, 28, 44, 0.96);
+  border: 1px solid rgba(157, 209, 232, 0.35);
+  color: var(--text);
+  pointer-events: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.tutorial-step {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.tutorial-card h3 {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.tutorial-body {
+  margin: 0 0 0.85rem;
+  color: var(--foam);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.tutorial-card .btn {
+  width: 100%;
+}
+
 .panel {
   width: min(440px, 100%);
   max-width: 96vw;
@@ -250,6 +318,21 @@ html, body {
   font-size: 0.9rem;
   line-height: 1.65;
   margin-bottom: 1rem;
+}
+
+.score-breakdown {
+  margin: -0.35rem 0 0.9rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(240, 162, 2, 0.12);
+  border: 1px solid rgba(240, 162, 2, 0.28);
+  color: #ffe2a8;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.score-breakdown.hidden {
+  display: none;
 }
 
 .tips {
@@ -741,6 +824,26 @@ html, body {
     font-size: 0.78rem;
     line-height: 1.4;
     margin-bottom: 0.45rem;
+  }
+
+  .score-breakdown {
+    margin: -0.15rem 0 0.55rem;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.74rem;
+    line-height: 1.4;
+  }
+
+  .tutorial-card {
+    padding: 0.7rem 0.8rem 0.75rem;
+  }
+
+  .tutorial-card h3 {
+    font-size: 0.95rem;
+  }
+
+  .tutorial-body {
+    font-size: 0.78rem;
+    margin-bottom: 0.6rem;
   }
 
   .tips {
