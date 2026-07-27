@@ -44,6 +44,7 @@
   const FIRST_BUOY_OFFSET = 880;
   const ENDLESS_FIRST_BUOY_OFFSET = 420;
   const ENDLESS_AHEAD = 8;
+  const ENDLESS_KM_EVERY = 1000;
   let nextBuoySeq = 0;
   const SCENERY_EVERY = 5;
   const COURSE_X = 0;
@@ -347,6 +348,20 @@
 
   function currentDistanceM() {
     return Math.max(0, START_Y - boat.y);
+  }
+
+  function endlessKmMarkerDistances() {
+    const dist = currentDistanceM();
+    const minM = Math.max(
+      ENDLESS_KM_EVERY,
+      Math.floor((dist - 900) / ENDLESS_KM_EVERY) * ENDLESS_KM_EVERY
+    );
+    const maxM = Math.ceil((dist + 2600) / ENDLESS_KM_EVERY) * ENDLESS_KM_EVERY;
+    const out = [];
+    for (let m = minM; m <= maxM; m += ENDLESS_KM_EVERY) {
+      out.push(m);
+    }
+    return out;
   }
 
   function resetRun(keepOverlay = false) {
@@ -897,10 +912,16 @@
       const markers = [{ y: START_Y + 40, label: "START", color: "rgba(240, 162, 2, 0.85)" }];
       if (gameMode === "practice") {
         markers.push({ y: goalY(), label: "GOAL", color: "rgba(62, 207, 142, 0.9)" });
+      } else if (gameMode === "endless") {
+        const kmColor = "rgba(62, 207, 142, 0.82)";
+        for (const m of endlessKmMarkerDistances()) {
+          markers.push({ y: START_Y - m, label: `${m} m`, color: kmColor });
+        }
       }
       for (const m of markers) {
-        const left = toLocal(COURSE_X - 110, m.y);
-        const right = toLocal(COURSE_X + 110, m.y);
+        const halfW = m.label === "START" || m.label === "GOAL" ? 110 : 130;
+        const left = toLocal(COURSE_X - halfW, m.y);
+        const right = toLocal(COURSE_X + halfW, m.y);
         if (left.forward < view.near || right.forward < view.near) continue;
         const pL = project(left.forward, left.right, view);
         const pR = project(right.forward, right.right, view);
@@ -1510,6 +1531,11 @@
     drawLineMarker(START_Y + 40, "rgba(240, 162, 2, 0.9)", "START");
     if (gameMode === "practice") {
       drawLineMarker(goalY(), "rgba(62, 207, 142, 0.9)", "GOAL");
+    } else if (gameMode === "endless") {
+      const kmColor = "rgba(62, 207, 142, 0.85)";
+      for (const m of endlessKmMarkerDistances()) {
+        drawLineMarker(START_Y - m, kmColor, `${m} m`);
+      }
     }
 
     // tower mark
