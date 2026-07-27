@@ -1095,10 +1095,11 @@
         for (let y = yBot; y >= yTop; y -= step) {
           const li = toLocal(innerX, y);
           const lo = toLocal(outerX, y);
-          const fwd = (li.forward + lo.forward) * 0.5;
-          if (fwd < view.near || fwd > view.far) continue;
-          const pi = project(fwd, li.right, view);
-          const po = project(fwd, lo.right, view);
+          // 片側だけ欠けるとポリゴンが川の上に食い込むので、同じ y で両方見えるときだけ採用
+          if (li.forward < view.near || lo.forward < view.near) continue;
+          if (li.forward > view.far && lo.forward > view.far) continue;
+          const pi = project(li.forward, li.right, view);
+          const po = project(lo.forward, lo.right, view);
           if (!pi || !po) continue;
           ptsInner.push(pi);
           ptsOuter.push(po);
@@ -1156,10 +1157,10 @@
         const crest = COURSE_X + side * (RIVER_HALF + 175);
         const outer = COURSE_X + side * (RIVER_HALF + 1400);
 
-        fillBand(traceBand(waterEdge, mud), scene.mud[0], scene.mud[1], 0);
-        fillBand(traceBand(mud, slope), scene.slope[0], scene.slope[1], 0);
-        fillBand(traceBand(slope, crest), scene.crest[0], scene.crest[1], 0);
         fillBand(traceBand(crest, outer), scene.landFar[0], scene.landFar[1], side);
+        fillBand(traceBand(slope, crest), scene.crest[0], scene.crest[1], 0);
+        fillBand(traceBand(mud, slope), scene.slope[0], scene.slope[1], 0);
+        fillBand(traceBand(waterEdge, mud), scene.mud[0], scene.mud[1], 0);
         strokeEdge(crest - side * 8, "rgba(220, 210, 180, 0.35)", 2);
         strokeEdge(waterEdge, "rgba(180, 200, 160, 0.4)", 2);
 
@@ -1342,42 +1343,6 @@
     ctx.globalAlpha = 1;
   }
 
-  function fillRiverChannel(view, scene, canvasH) {
-    const river = ctx.createLinearGradient(0, view.horizon, 0, canvasH + 100);
-    river.addColorStop(0, scene.water[0]);
-    river.addColorStop(0.3, scene.water[1]);
-    river.addColorStop(0.7, scene.water[2]);
-    river.addColorStop(1, scene.water[3]);
-    const riverLeft = [];
-    const riverRight = [];
-    const yTopW = boat.y - 1600;
-    const yBotW = boat.y + 700;
-    for (let worldY = yBotW; worldY >= yTopW; worldY -= 40) {
-      const locL = toLocal(COURSE_X - RIVER_HALF, worldY);
-      const locR = toLocal(COURSE_X + RIVER_HALF, worldY);
-      const fwd = Math.min(locL.forward, locR.forward);
-      if (fwd < view.near || fwd > view.far) continue;
-      const pL = project(fwd, locL.right, view);
-      const pR = project(fwd, locR.right, view);
-      if (!pL || !pR) continue;
-      riverLeft.push(pL);
-      riverRight.push(pR);
-    }
-    if (riverLeft.length < 2 || riverRight.length < 2) return false;
-    ctx.fillStyle = river;
-    ctx.beginPath();
-    ctx.moveTo(riverLeft[0].x, riverLeft[0].y);
-    for (let i = 1; i < riverLeft.length; i++) {
-      ctx.lineTo(riverLeft[i].x, riverLeft[i].y);
-    }
-    for (let i = riverRight.length - 1; i >= 0; i--) {
-      ctx.lineTo(riverRight[i].x, riverRight[i].y);
-    }
-    ctx.closePath();
-    ctx.fill();
-    return true;
-  }
-
   function render(dt = 0.016) {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
@@ -1431,32 +1396,14 @@
 
     drawFireworks(scene, view.horizon);
 
-    // 地平線下は陸色の下地（土手の奥）
-    const landBase = ctx.createLinearGradient(0, view.horizon, 0, h + 100);
-    landBase.addColorStop(0, scene.landFar[0]);
-    landBase.addColorStop(0.55, scene.landFar[1]);
-    landBase.addColorStop(1, scene.landFar[1]);
-    ctx.fillStyle = landBase;
+    // river water under horizon
+    const river = ctx.createLinearGradient(0, view.horizon, 0, h + 100);
+    river.addColorStop(0, scene.water[0]);
+    river.addColorStop(0.3, scene.water[1]);
+    river.addColorStop(0.7, scene.water[2]);
+    river.addColorStop(1, scene.water[3]);
+    ctx.fillStyle = river;
     ctx.fillRect(-w, view.horizon, w * 3, h + 140);
-
-    ctx.restore();
-
-    drawRiverBanksFP(view);
-
-    ctx.save();
-    ctx.translate(w / 2, view.horizon);
-    ctx.rotate(view.bank);
-    ctx.translate(-w / 2, -view.horizon);
-
-    if (!fillRiverChannel(view, scene, h)) {
-      const river = ctx.createLinearGradient(0, view.horizon, 0, h + 100);
-      river.addColorStop(0, scene.water[0]);
-      river.addColorStop(0.3, scene.water[1]);
-      river.addColorStop(0.7, scene.water[2]);
-      river.addColorStop(1, scene.water[3]);
-      ctx.fillStyle = river;
-      ctx.fillRect(-w * 0.2, view.horizon, w * 1.4, h + 140);
-    }
 
     ctx.strokeStyle = scene.ripple;
     ctx.lineWidth = 1.4;
@@ -1495,6 +1442,7 @@
     ctx.setLineDash([]);
     ctx.restore();
 
+    drawRiverBanksFP(view);
     drawWaterMarkers(view);
     if (gameMode === "practice") {
       const towerFwd = toLocal(COURSE_X, towerWorldY()).forward;
