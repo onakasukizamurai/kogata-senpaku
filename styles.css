@@ -1024,9 +1024,9 @@ html, body {
   }
 }
 
-/* 縦持ち：横にしてね案内 */
+/* 縦持ち：横にしてね案内（スタート画面を過ぎたあとだけ） */
 @media (orientation: portrait) and (max-width: 900px) {
-  .rotate-hint {
+  body.landscape-required .rotate-hint {
     position: fixed;
     inset: 0;
     z-index: 100;
@@ -1041,7 +1041,7 @@ html, body {
     padding: 1.5rem;
   }
 
-  .app {
+  body.landscape-required .app {
     filter: blur(2px);
     pointer-events: none;
   }

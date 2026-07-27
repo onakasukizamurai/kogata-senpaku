@@ -80,6 +80,7 @@
   let bestEndlessM = 0;
   let tutorialActive = false;
   let tutorialStep = 0;
+  let portraitStartOk = true;
   try {
     bestEndlessM = Number(localStorage.getItem(ENDLESS_BEST_KEY) || 0) || 0;
   } catch (_) {
@@ -1975,12 +1976,20 @@
     if (els.tutorialSpotlight) els.tutorialSpotlight.style.opacity = "0";
   }
 
+  function syncLandscapeRequirement() {
+    document.body.classList.toggle("landscape-required", !portraitStartOk);
+  }
+
   function showStartIntro() {
+    portraitStartOk = true;
+    syncLandscapeRequirement();
     els.startIntroPanel?.classList.remove("hidden");
     els.startModePanel?.classList.add("hidden");
   }
 
   function showStartMode() {
+    portraitStartOk = false;
+    syncLandscapeRequirement();
     els.startIntroPanel?.classList.add("hidden");
     els.startModePanel?.classList.remove("hidden");
   }
@@ -1993,6 +2002,8 @@
 
   function startGame(mode) {
     if (mode === "practice" || mode === "endless") gameMode = mode;
+    portraitStartOk = false;
+    syncLandscapeRequirement();
     hideTutorial();
     resetRun();
     resize();
@@ -2012,7 +2023,9 @@
     running = false;
     finished = false;
     els.resultOverlay.classList.add("hidden");
+    portraitStartOk = phase === "intro";
     openStartOverlay(phase);
+    syncLandscapeRequirement();
     updateHud();
     drawWheel();
     render();
