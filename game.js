@@ -1095,11 +1095,10 @@
         for (let y = yBot; y >= yTop; y -= step) {
           const li = toLocal(innerX, y);
           const lo = toLocal(outerX, y);
-          // 片側だけ欠けるとポリゴンが川の上に食い込むので、同じ y で両方見えるときだけ採用
-          if (li.forward < view.near || lo.forward < view.near) continue;
-          if (li.forward > view.far && lo.forward > view.far) continue;
-          const pi = project(li.forward, li.right, view);
-          const po = project(lo.forward, lo.right, view);
+          const fwd = (li.forward + lo.forward) * 0.5;
+          if (fwd < view.near || fwd > view.far) continue;
+          const pi = project(fwd, li.right, view);
+          const po = project(fwd, lo.right, view);
           if (!pi || !po) continue;
           ptsInner.push(pi);
           ptsOuter.push(po);
@@ -1157,10 +1156,10 @@
         const crest = COURSE_X + side * (RIVER_HALF + 175);
         const outer = COURSE_X + side * (RIVER_HALF + 1400);
 
-        fillBand(traceBand(crest, outer), scene.landFar[0], scene.landFar[1], side);
-        fillBand(traceBand(slope, crest), scene.crest[0], scene.crest[1], 0);
-        fillBand(traceBand(mud, slope), scene.slope[0], scene.slope[1], 0);
         fillBand(traceBand(waterEdge, mud), scene.mud[0], scene.mud[1], 0);
+        fillBand(traceBand(mud, slope), scene.slope[0], scene.slope[1], 0);
+        fillBand(traceBand(slope, crest), scene.crest[0], scene.crest[1], 0);
+        fillBand(traceBand(crest, outer), scene.landFar[0], scene.landFar[1], side);
         strokeEdge(crest - side * 8, "rgba(220, 210, 180, 0.35)", 2);
         strokeEdge(waterEdge, "rgba(180, 200, 160, 0.4)", 2);
 
@@ -1179,6 +1178,33 @@
           ctx.lineTo(p.x + side * s * 0.5, p.y - s * 0.75);
           ctx.stroke();
         }
+      }
+
+      // 土手のてっぺんより外は水面がはみ出しても陸で上書き（地平線まで）
+      const landCap = ctx.createLinearGradient(0, view.horizon, 0, view.h);
+      landCap.addColorStop(0, scene.landFar[0]);
+      landCap.addColorStop(1, scene.landFar[1]);
+      ctx.fillStyle = landCap;
+      for (const side of [-1, 1]) {
+        const crestX = COURSE_X + side * (RIVER_HALF + 175);
+        const xScreen = side < 0 ? -view.w * 2 : view.w * 3;
+        const crestPts = [];
+        for (let y = yBot; y >= yTop; y -= step) {
+          const loc = toLocal(crestX, y);
+          if (loc.forward < view.near || loc.forward > view.far) continue;
+          const p = project(loc.forward, loc.right, view);
+          if (p) crestPts.push(p);
+        }
+        if (crestPts.length < 2) continue;
+        ctx.beginPath();
+        ctx.moveTo(xScreen, view.horizon - 1);
+        ctx.lineTo(xScreen, view.h + 120);
+        for (let i = 0; i < crestPts.length; i++) {
+          ctx.lineTo(crestPts[i].x, crestPts[i].y);
+        }
+        ctx.lineTo(crestPts[crestPts.length - 1].x, view.horizon - 1);
+        ctx.closePath();
+        ctx.fill();
       }
 
       const items = bankLandmarks
@@ -1396,14 +1422,50 @@
 
     drawFireworks(scene, view.horizon);
 
-    // river water under horizon
+    // 地平線下はまず陸色（土手の奥に水面がはみ出さない）
+    const landBase = ctx.createLinearGradient(0, view.horizon, 0, h + 100);
+    landBase.addColorStop(0, scene.landFar[0]);
+    landBase.addColorStop(0.55, scene.landFar[1]);
+    landBase.addColorStop(1, scene.landFar[1]);
+    ctx.fillStyle = landBase;
+    ctx.fillRect(-w, view.horizon, w * 3, h + 140);
+
     const river = ctx.createLinearGradient(0, view.horizon, 0, h + 100);
     river.addColorStop(0, scene.water[0]);
     river.addColorStop(0.3, scene.water[1]);
     river.addColorStop(0.7, scene.water[2]);
     river.addColorStop(1, scene.water[3]);
-    ctx.fillStyle = river;
-    ctx.fillRect(-w, view.horizon, w * 3, h + 140);
+    const riverLeft = [];
+    const riverRight = [];
+    const yTopW = boat.y - 1600;
+    const yBotW = boat.y + 700;
+    for (let worldY = yBotW; worldY >= yTopW; worldY -= 40) {
+      const locL = toLocal(COURSE_X - RIVER_HALF, worldY);
+      const locR = toLocal(COURSE_X + RIVER_HALF, worldY);
+      if (locL.forward < view.near || locR.forward < view.near) continue;
+      if (locL.forward > view.far || locR.forward > view.far) continue;
+      const pL = project(locL.forward, locL.right, view);
+      const pR = project(locR.forward, locR.right, view);
+      if (!pL || !pR) continue;
+      riverLeft.push(pL);
+      riverRight.push(pR);
+    }
+    if (riverLeft.length >= 2 && riverRight.length >= 2) {
+      ctx.fillStyle = river;
+      ctx.beginPath();
+      ctx.moveTo(riverLeft[0].x, riverLeft[0].y);
+      for (let i = 1; i < riverLeft.length; i++) {
+        ctx.lineTo(riverLeft[i].x, riverLeft[i].y);
+      }
+      for (let i = riverRight.length - 1; i >= 0; i--) {
+        ctx.lineTo(riverRight[i].x, riverRight[i].y);
+      }
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.fillStyle = river;
+      ctx.fillRect(-w * 0.2, view.horizon, w * 1.4, h + 140);
+    }
 
     ctx.strokeStyle = scene.ripple;
     ctx.lineWidth = 1.4;
@@ -2090,6 +2152,7 @@
   resize();
   resetRun(true);
   showStartIntro();
+  syncLandscapeRequirement();
   drawWheel();
   render();
   renderMap();
