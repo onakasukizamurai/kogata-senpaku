@@ -429,6 +429,10 @@ html, body {
   border-radius: 1rem;
 }
 
+#endBtn {
+  border-radius: 1rem;
+}
+
 .btn.primary:hover {
   transform: translateY(-1px);
   background: #ffb41f;
