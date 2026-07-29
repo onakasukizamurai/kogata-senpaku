@@ -27,6 +27,11 @@
     playStartBtn: document.getElementById("playStartBtn"),
     startBackBtn: document.getElementById("startBackBtn"),
     resultOverlay: document.getElementById("resultOverlay"),
+    pauseOverlay: document.getElementById("pauseOverlay"),
+    pauseBtn: document.getElementById("pauseBtn"),
+    resumeBtn: document.getElementById("resumeBtn"),
+    pauseEndBtn: document.getElementById("pauseEndBtn"),
+    pauseLead: document.getElementById("pauseLead"),
     startPracticeBtn: document.getElementById("startPracticeBtn"),
     startEndlessBtn: document.getElementById("startEndlessBtn"),
     retryBtn: document.getElementById("retryBtn"),
@@ -70,6 +75,7 @@
 
   const keys = new Set();
   let running = false;
+  let paused = false;
   let finished = false;
   let lastTs = 0;
   let elapsed = 0;
@@ -631,7 +637,10 @@
     if (finished) return;
     finished = true;
     running = false;
+    paused = false;
+    els.pauseOverlay?.classList.add("hidden");
     distanceM = currentDistanceM();
+    syncPauseControls();
 
     if (goalCenterOffset == null) {
       goalCenterOffset = Math.abs(boat.x - COURSE_X);
@@ -669,6 +678,12 @@
         lead = isNewBest
           ? "指定と逆側でしたが、自己ベストを更新しました。"
           : "指定と逆の側を通ってしまいました。次の通過側を先に確認しましょう。";
+      } else if (failReason === "quit") {
+        title = isNewBest ? "途中終了・記録更新" : "途中終了";
+        eyebrow = "エンドレスコース";
+        lead = isNewBest
+          ? "途中終了でしたが、自己ベストを更新しました。"
+          : "プレイを終了しました。自己ベストを目指して再挑戦できます。";
       } else if (!isNewBest) {
         title = "エンドレスコース終了";
         lead = "失敗するまでどこまで進めるかを競うモードです。自己ベストを目指しましょう。";
@@ -751,6 +766,15 @@
         title = "もう少し寄せて";
         eyebrow = "ほぼ良好";
         lead = "通過側は正しいですが、ブイから離れすぎています。舵を早めに戻すと安定します。";
+      }
+
+      if (failReason === "quit") {
+        title = "途中終了";
+        eyebrow = "結果";
+        lead =
+          nextIndex < buoys.length
+            ? "コースの途中で終了しました。もう一度最初から挑戦できます。"
+            : "プレイを終了しました。結果を確認して再挑戦できます。";
       }
     }
 
@@ -1783,6 +1807,7 @@
   }
 
   function onWheelDown(e) {
+    if (paused || finished || tutorialActive) return;
     e.preventDefault();
     draggingWheel = true;
     wheelWrap.classList.add("dragging");
@@ -1824,8 +1849,10 @@
       elapsed += dt;
       updateHud();
       drawWheel();
-    } else {
+    } else if (!paused) {
       applyInputs(dt);
+      drawWheel();
+    } else {
       drawWheel();
     }
 
@@ -1968,6 +1995,7 @@
     if (els.tutorialSpotlight) els.tutorialSpotlight.style.opacity = "0";
     running = true;
     lastTs = 0;
+    syncPauseControls();
   }
 
   function hideTutorial() {
@@ -2005,6 +2033,8 @@
     portraitStartOk = false;
     syncLandscapeRequirement();
     hideTutorial();
+    paused = false;
+    els.pauseOverlay?.classList.add("hidden");
     resetRun();
     resize();
     els.startOverlay.classList.add("hidden");
@@ -2015,10 +2045,77 @@
     } else {
       running = true;
     }
+    syncPauseControls();
+  }
+
+  function syncPauseControls() {
+    const showPause =
+      gameMode === "endless" &&
+      !finished &&
+      !paused &&
+      !tutorialActive &&
+      els.startOverlay.classList.contains("hidden") &&
+      els.resultOverlay.classList.contains("hidden");
+    els.pauseBtn?.classList.toggle("hidden", !showPause);
+    els.pauseBtn?.closest(".helm-actions")?.classList.toggle("has-pause", showPause);
+    if (paused) {
+      els.pauseOverlay?.classList.remove("hidden");
+    } else {
+      els.pauseOverlay?.classList.add("hidden");
+    }
+  }
+
+  function pauseEndless() {
+    if (gameMode !== "endless" || !running || finished || paused || tutorialActive) return;
+    paused = true;
+    running = false;
+    draggingWheel = false;
+    wheelWrap.classList.remove("dragging");
+    if (els.pauseLead) {
+      els.pauseLead.textContent = `現在 ${Math.round(currentDistanceM())} m。再開するか、ここで終了できます。`;
+    }
+    syncPauseControls();
+  }
+
+  function resumeEndless() {
+    if (!paused || finished) return;
+    paused = false;
+    running = true;
+    lastTs = 0;
+    syncPauseControls();
+  }
+
+  function endFromPause() {
+    if (!paused || finished) return;
+    endCurrentPlay();
+  }
+
+  function isActivelyPlaying() {
+    return (
+      !finished &&
+      !tutorialActive &&
+      els.startOverlay.classList.contains("hidden") &&
+      els.resultOverlay.classList.contains("hidden") &&
+      (running || paused)
+    );
+  }
+
+  function endCurrentPlay() {
+    if (!isActivelyPlaying()) {
+      goHome("intro");
+      return;
+    }
+    paused = false;
+    els.pauseOverlay?.classList.add("hidden");
+    failReason = "quit";
+    finishRun();
+    syncPauseControls();
   }
 
   function goHome(phase = "intro") {
     hideTutorial();
+    paused = false;
+    els.pauseOverlay?.classList.add("hidden");
     resetRun(true);
     running = false;
     finished = false;
@@ -2027,6 +2124,7 @@
     openStartOverlay(phase);
     syncLandscapeRequirement();
     updateHud();
+    syncPauseControls();
     drawWheel();
     render();
     renderMap();
@@ -2053,6 +2151,15 @@
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
       e.preventDefault();
     }
+    if (e.key === "Escape" && gameMode === "endless") {
+      if (paused) {
+        e.preventDefault();
+        resumeEndless();
+      } else if (running && !finished && !tutorialActive) {
+        e.preventDefault();
+        pauseEndless();
+      }
+    }
   });
   window.addEventListener("keyup", (e) => keys.delete(e.key));
 
@@ -2067,18 +2174,25 @@
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
   els.changeCourseBtn.addEventListener("click", () => goHome("mode"));
   els.resultEndBtn.addEventListener("click", () => goHome("intro"));
-  els.endBtn.addEventListener("click", () => goHome("intro"));
+  els.endBtn.addEventListener("click", endCurrentPlay);
+  els.pauseBtn?.addEventListener("click", pauseEndless);
+  els.resumeBtn?.addEventListener("click", resumeEndless);
+  els.pauseEndBtn?.addEventListener("click", endFromPause);
   els.tutorialNextBtn.addEventListener("click", advanceTutorial);
   els.resetBtn.addEventListener("click", () => {
     const onStartScreen = !els.startOverlay.classList.contains("hidden");
+    paused = false;
+    els.pauseOverlay?.classList.add("hidden");
     resetRun();
     if (onStartScreen) {
       running = false;
+      syncPauseControls();
       return;
     }
     els.resultOverlay.classList.add("hidden");
     running = true;
     lastTs = 0;
+    syncPauseControls();
   });
 
   wheelWrap.addEventListener("pointerdown", onWheelDown);

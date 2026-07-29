@@ -633,6 +633,18 @@ html, body {
   gap: 0.55rem;
 }
 
+.helm-actions.has-pause #pauseBtn {
+  grid-column: 1 / -1;
+}
+
+.pause-panel h2 {
+  margin-bottom: 0.35rem;
+}
+
+.pause-panel .result-actions {
+  margin-top: 0.85rem;
+}
+
 .throttle-block {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -865,6 +877,16 @@ html, body {
     gap: 0.2rem;
     width: auto;
     flex: 0 0 auto;
+  }
+
+  .helm-actions.has-pause {
+    flex-wrap: wrap;
+    max-width: 11rem;
+  }
+
+  .helm-actions.has-pause #pauseBtn {
+    flex: 1 1 100%;
+    grid-column: auto;
   }
 
   .helm .btn {

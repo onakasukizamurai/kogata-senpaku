@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=42" />
+  <link rel="stylesheet" href="styles.css?v=43" />
 </head>
 <body>
   <div class="rotate-hint" id="rotateHint">
@@ -111,6 +111,17 @@
             <dl class="score" id="scoreList"></dl>
           </div>
         </div>
+        <div class="overlay hidden" id="pauseOverlay">
+          <div class="panel pause-panel">
+            <p class="eyebrow">エンドレスコース</p>
+            <h2>一時停止</h2>
+            <p class="lead" id="pauseLead">距離を確認して、再開または終了を選べます。</p>
+            <div class="result-actions">
+              <button type="button" class="btn primary" id="resumeBtn">再開</button>
+              <button type="button" class="btn ghost" id="pauseEndBtn">終了</button>
+            </div>
+          </div>
+        </div>
       </main>
 
       <aside class="helm">
@@ -129,6 +140,7 @@
             <span id="throttleLabel">35%</span>
           </div>
           <div class="helm-actions">
+            <button type="button" class="btn secondary hidden" id="pauseBtn">一時停止</button>
             <button type="button" class="btn ghost" id="resetBtn">リセット</button>
             <button type="button" class="btn ghost" id="endBtn">終了</button>
           </div>
@@ -136,6 +148,6 @@
       </aside>
     </div>
   </div>
-  <script src="game.js?v=43"></script>
+  <script src="game.js?v=45"></script>
 </body>
 </html>
