@@ -333,8 +333,8 @@
         y: SKYTREE_Y,
         side: -1,
         type: "skytree",
-        w: 36,
-        h: 580,
+        w: 28,
+        h: 640,
         tone: 0.9,
       });
     }
@@ -1336,128 +1336,118 @@
     const baseY = p.y;
     const tipY = baseY - bh;
     const night = scene.windowMode === "night";
-    // 検索結果に多い、水色〜白のフラットなイラスト調
-    const body = night ? "#c5d4e6" : "#e8f4fc";
-    const line = night ? "#7a93b0" : "#6aa3c8";
-    const deck = night ? "#ffb060" : "#9fd0ea";
-    const tip = night ? "#ffd27a" : "#5bc4ef";
+    // 実寸比に近い配置: 天望デッキ350/634、天望回廊450/634
+    const deckT = 350 / 634;
+    const galleryT = 450 / 634;
+    const bodyTopT = 0.74;
+    const deckY = baseY - bh * deckT;
+    const galleryY = baseY - bh * galleryT;
+    const bodyTopY = baseY - bh * bodyTopT;
 
-    const midY = baseY - bh * 0.46;
-    const galleryY = baseY - bh * 0.66;
-    const antennaY = baseY - bh * 0.7;
+    const body = night ? "#c8d7e8" : "#eef7fc";
+    const line = night ? "#6f8aaa" : "#5a9ec4";
+    const deckFill = night ? "#ffb56a" : "#8ec8e6";
 
-    // 影（ごく薄い）
-    ctx.fillStyle = "rgba(20, 40, 60, 0.12)";
-    ctx.beginPath();
-    ctx.ellipse(x, baseY + 2, bw * 0.55, Math.max(2, bw * 0.08), 0, 0, Math.PI * 2);
-    ctx.fill();
+    // 高さ t(0=足元,1=先端) での半幅 — 一本の細い三角
+    const halfAt = (t) => {
+      if (t <= 0) return bw * 0.55;
+      if (t >= bodyTopT) return bw * 0.035;
+      return bw * (0.55 - (0.55 - 0.045) * (t / bodyTopT));
+    };
 
-    // 三角ベース
-    ctx.fillStyle = body;
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(1, bw * 0.05);
-    ctx.beginPath();
-    ctx.moveTo(x - bw * 0.7, baseY);
-    ctx.lineTo(x - bw * 0.2, baseY - bh * 0.12);
-    ctx.lineTo(x + bw * 0.2, baseY - bh * 0.12);
-    ctx.lineTo(x + bw * 0.7, baseY);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // 下段シャフト（テーパー）
-    ctx.beginPath();
-    ctx.moveTo(x - bw * 0.2, baseY - bh * 0.12);
-    ctx.lineTo(x - bw * 0.12, midY + bh * 0.04);
-    ctx.lineTo(x + bw * 0.12, midY + bh * 0.04);
-    ctx.lineTo(x + bw * 0.2, baseY - bh * 0.12);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // 下段の菱形格子（軽量・本数固定）
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(0.7, bw * 0.028);
-    ctx.globalAlpha = 0.85;
-    for (let i = 0; i < 4; i++) {
-      const t0 = 0.14 + i * 0.07;
-      const t1 = t0 + 0.065;
-      const y0 = baseY - bh * t0;
-      const y1 = baseY - bh * t1;
-      const w0 = bw * (0.18 - i * 0.015);
-      const w1 = bw * (0.15 - i * 0.015);
-      ctx.beginPath();
-      ctx.moveTo(x - w0, y0);
-      ctx.lineTo(x, y1);
-      ctx.lineTo(x + w0, y0);
-      ctx.moveTo(x - w1, y1);
-      ctx.lineTo(x, y0);
-      ctx.lineTo(x + w1, y1);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-
-    // 天望デッキ（カプセル型）
-    const deckRx = bw * 0.55;
-    const deckRy = Math.max(5, bh * 0.055);
-    ctx.fillStyle = deck;
-    ctx.beginPath();
-    ctx.ellipse(x, midY, deckRx, deckRy, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(1.2, bw * 0.055);
-    ctx.stroke();
-    // デッキの帯
-    ctx.beginPath();
-    ctx.moveTo(x - deckRx * 0.75, midY);
-    ctx.lineTo(x + deckRx * 0.75, midY);
-    ctx.stroke();
-
-    // 上段シャフト
+    // 本体（連続した細長い三角）
     ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.moveTo(x - bw * 0.1, midY - deckRy * 0.7);
-    ctx.lineTo(x - bw * 0.045, antennaY);
-    ctx.lineTo(x + bw * 0.045, antennaY);
-    ctx.lineTo(x + bw * 0.1, midY - deckRy * 0.7);
+    ctx.moveTo(x - halfAt(0), baseY);
+    ctx.lineTo(x - halfAt(bodyTopT), bodyTopY);
+    ctx.lineTo(x + halfAt(bodyTopT), bodyTopY);
+    ctx.lineTo(x + halfAt(0), baseY);
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(0.8, bw * 0.03);
+    ctx.lineWidth = Math.max(1, bw * 0.045);
     ctx.stroke();
 
-    // 天望回廊
-    ctx.fillStyle = deck;
+    // 中央の縦線
     ctx.beginPath();
-    ctx.ellipse(x, galleryY, bw * 0.24, Math.max(2.5, bh * 0.02), 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x, bodyTopY);
     ctx.stroke();
 
-    // アンテナ
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(1.4, bw * 0.08);
-    ctx.beginPath();
-    ctx.moveTo(x, antennaY);
-    ctx.lineTo(x, tipY + bh * 0.03);
-    ctx.stroke();
-    ctx.lineWidth = Math.max(0.9, bw * 0.045);
-    ctx.beginPath();
-    ctx.moveTo(x, tipY + bh * 0.03);
-    ctx.lineTo(x, tipY);
-    ctx.stroke();
-    // アンテナの節
-    ctx.lineWidth = Math.max(0.7, bw * 0.03);
-    for (const t of [0.78, 0.88, 0.95]) {
+    // 菱形格子（本体の中だけ・本数固定）
+    ctx.lineWidth = Math.max(0.6, bw * 0.025);
+    ctx.globalAlpha = 0.8;
+    const steps = 7;
+    for (let i = 1; i < steps; i++) {
+      const t = (i / steps) * bodyTopT;
       const yy = baseY - bh * t;
-      const hw = bw * (0.08 - (t - 0.78) * 0.15);
+      const hw = halfAt(t) * 0.92;
       ctx.beginPath();
       ctx.moveTo(x - hw, yy);
       ctx.lineTo(x + hw, yy);
       ctx.stroke();
     }
-    ctx.fillStyle = tip;
+    for (let i = 0; i < 6; i++) {
+      const t0 = (i / 6) * bodyTopT;
+      const t1 = ((i + 1) / 6) * bodyTopT;
+      const y0 = baseY - bh * t0;
+      const y1 = baseY - bh * t1;
+      const w0 = halfAt(t0) * 0.9;
+      const w1 = halfAt(t1) * 0.9;
+      ctx.beginPath();
+      ctx.moveTo(x - w0, y0);
+      ctx.lineTo(x + w1, y1);
+      ctx.moveTo(x + w0, y0);
+      ctx.lineTo(x - w1, y1);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // 天望デッキ（本体よりはっきり張り出す円）
+    const localW = halfAt(deckT);
+    const deckR = Math.max(localW * 2.1, bw * 0.42);
+    ctx.fillStyle = deckFill;
     ctx.beginPath();
-    ctx.arc(x, tipY, Math.max(1.4, bw * 0.08), 0, Math.PI * 2);
+    ctx.ellipse(x, deckY, deckR, Math.max(3.5, deckR * 0.55), 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = line;
+    ctx.lineWidth = Math.max(1.2, bw * 0.05);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(x, deckY, deckR * 0.7, Math.max(2, deckR * 0.28), 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 天望回廊（小さめ）
+    const gR = Math.max(halfAt(galleryT) * 2.4, bw * 0.18);
+    ctx.fillStyle = deckFill;
+    ctx.beginPath();
+    ctx.ellipse(x, galleryY, gR, Math.max(2, gR * 0.45), 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 長いアンテナ（全体の約1/4）
+    ctx.strokeStyle = line;
+    ctx.lineWidth = Math.max(1.3, bw * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(x, bodyTopY);
+    ctx.lineTo(x, tipY + bh * 0.02);
+    ctx.stroke();
+    ctx.lineWidth = Math.max(0.8, bw * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(x, tipY + bh * 0.02);
+    ctx.lineTo(x, tipY);
+    ctx.stroke();
+    for (const t of [0.8, 0.88, 0.95]) {
+      const yy = baseY - bh * t;
+      const hw = bw * 0.06 * (1.1 - t);
+      ctx.beginPath();
+      ctx.moveTo(x - hw, yy);
+      ctx.lineTo(x + hw, yy);
+      ctx.stroke();
+    }
+    ctx.fillStyle = night ? "#ffd27a" : "#5bc4ef";
+    ctx.beginPath();
+    ctx.arc(x, tipY, Math.max(1.2, bw * 0.07), 0, Math.PI * 2);
     ctx.fill();
   }
 
