@@ -727,26 +727,46 @@
       lead = "岸にぶつかると0点です。川の中央寄りを意識して操船しましょう。";
       centerRank = "岸接触";
     } else {
-      timePenalty = Math.max(0, elapsed - 55) * 0.4;
-      if (goalCenterOffset <= GOAL_CENTER_GOOD) {
+      const courseIncomplete = failReason === "quit" && nextIndex < buoys.length;
+      let incompletePenalty = 0;
+
+      if (courseIncomplete) {
+        // 未通過ブイは大きく減点（0本通過なら0点）
+        const missed = Math.max(0, BUOY_COUNT - passes);
+        incompletePenalty = missed * 34;
         centerPenalty = 0;
-        centerRank = "ほぼ中心";
-      } else if (goalCenterOffset <= GOAL_CENTER_OK) {
-        centerPenalty = ((goalCenterOffset - GOAL_CENTER_GOOD) / (GOAL_CENTER_OK - GOAL_CENTER_GOOD)) * 12;
-        centerRank = "やや外側";
+        centerRank = "未到達";
+        timePenalty = 0;
       } else {
-        centerPenalty = 12 + Math.min(18, (goalCenterOffset - GOAL_CENTER_OK) * 0.12);
-        centerRank = "中心から遠い";
+        timePenalty = Math.max(0, elapsed - 55) * 0.4;
+        if (goalCenterOffset <= GOAL_CENTER_GOOD) {
+          centerPenalty = 0;
+          centerRank = "ほぼ中心";
+        } else if (goalCenterOffset <= GOAL_CENTER_OK) {
+          centerPenalty =
+            ((goalCenterOffset - GOAL_CENTER_GOOD) / (GOAL_CENTER_OK - GOAL_CENTER_GOOD)) * 12;
+          centerRank = "やや外側";
+        } else {
+          centerPenalty = 12 + Math.min(18, (goalCenterOffset - GOAL_CENTER_OK) * 0.12);
+          centerRank = "中心から遠い";
+        }
       }
 
       score = Math.max(
         0,
         Math.round(
-          100 - contacts * 18 - wrongSides * 22 - widePasses * 8 - centerPenalty - timePenalty
+          100 -
+            contacts * 18 -
+            wrongSides * 22 -
+            widePasses * 8 -
+            centerPenalty -
+            timePenalty -
+            incompletePenalty
         )
       );
 
       if (
+        !courseIncomplete &&
         score >= 85 &&
         contacts === 0 &&
         wrongSides === 0 &&
@@ -759,7 +779,7 @@
         title = "要練習";
         eyebrow = "見直しポイントあり";
         lead = "逆側通過や接触が目立ちます。速力を落として、次に通る側を先に意識しましょう。";
-      } else if (goalCenterOffset > GOAL_CENTER_OK) {
+      } else if (!courseIncomplete && goalCenterOffset > GOAL_CENTER_OK) {
         title = "ゴールを中心へ";
         eyebrow = "直線の締めが課題";
         lead = "蛇行のあとはコース中心へ戻して、まっすぐゴールを抜けましょう。";
@@ -772,18 +792,26 @@
       if (failReason === "quit") {
         title = "途中終了";
         eyebrow = "結果";
-        lead =
-          nextIndex < buoys.length
-            ? "コースの途中で終了しました。もう一度最初から挑戦できます。"
-            : "プレイを終了しました。結果を確認して再挑戦できます。";
+        lead = courseIncomplete
+          ? "コースの途中で終了しました。未通過のブイは減点になります。"
+          : "プレイを終了しました。結果を確認して再挑戦できます。";
+      }
+
+      if (els.scoreBreakdown) {
+        els.scoreBreakdown.textContent = buildScoreBreakdown(
+          timePenalty,
+          centerPenalty,
+          incompletePenalty
+        );
+        els.scoreBreakdown.classList.remove("hidden");
       }
     }
 
     els.resultEyebrow.textContent = eyebrow;
     els.resultTitle.textContent = `${score}`;
     els.resultLead.textContent = `${title}。${lead}`;
-    if (els.scoreBreakdown) {
-      els.scoreBreakdown.textContent = buildScoreBreakdown(timePenalty, centerPenalty);
+    if (bankCrash && els.scoreBreakdown) {
+      els.scoreBreakdown.textContent = buildScoreBreakdown(0, 0, 0);
       els.scoreBreakdown.classList.remove("hidden");
     }
     els.scoreList.innerHTML = `
@@ -791,7 +819,11 @@
       <div><dt>接触</dt><dd>${contacts} 回</dd></div>
       <div><dt>逆側通過</dt><dd>${wrongSides} 回</dd></div>
       <div><dt>離れすぎ</dt><dd>${widePasses} 回</dd></div>
-      <div><dt>ゴール中心ズレ</dt><dd>${bankCrash ? "—" : `${goalCenterOffset.toFixed(0)}（${centerRank}）`}</dd></div>
+      <div><dt>ゴール中心ズレ</dt><dd>${
+        bankCrash || (failReason === "quit" && nextIndex < buoys.length)
+          ? "—"
+          : `${goalCenterOffset.toFixed(0)}（${centerRank}）`
+      }</dd></div>
       <div><dt>所要時間</dt><dd>${elapsed.toFixed(1)} 秒</dd></div>
     `;
     els.resultOverlay.classList.remove("hidden");
@@ -1866,9 +1898,13 @@
     requestAnimationFrame(loop);
   }
 
-  function buildScoreBreakdown(timePenalty, centerPenalty) {
+  function buildScoreBreakdown(timePenalty, centerPenalty, incompletePenalty = 0) {
     if (bankCrash) return "減点の内訳：岸接触のため総合点は 0 点です。";
     const parts = [];
+    if (incompletePenalty >= 0.5) {
+      const missed = Math.max(0, BUOY_COUNT - passes);
+      parts.push(`未通過×${missed} −${Math.round(incompletePenalty)}`);
+    }
     if (contacts > 0) parts.push(`接触×${contacts} −${contacts * 18}`);
     if (wrongSides > 0) parts.push(`逆側×${wrongSides} −${wrongSides * 22}`);
     if (widePasses > 0) parts.push(`離れすぎ×${widePasses} −${widePasses * 8}`);
