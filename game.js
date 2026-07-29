@@ -32,6 +32,7 @@
     resumeBtn: document.getElementById("resumeBtn"),
     pauseEndBtn: document.getElementById("pauseEndBtn"),
     pauseLead: document.getElementById("pauseLead"),
+    pauseEyebrow: document.getElementById("pauseEyebrow"),
     startPracticeBtn: document.getElementById("startPracticeBtn"),
     startEndlessBtn: document.getElementById("startEndlessBtn"),
     retryBtn: document.getElementById("retryBtn"),
@@ -2050,7 +2051,6 @@
 
   function syncPauseControls() {
     const showPause =
-      gameMode === "endless" &&
       !finished &&
       !paused &&
       !tutorialActive &&
@@ -2065,19 +2065,27 @@
     }
   }
 
-  function pauseEndless() {
-    if (gameMode !== "endless" || !running || finished || paused || tutorialActive) return;
+  function pauseGame() {
+    if (!running || finished || paused || tutorialActive) return;
+    if (!els.startOverlay.classList.contains("hidden")) return;
     paused = true;
     running = false;
     draggingWheel = false;
     wheelWrap.classList.remove("dragging");
+    if (els.pauseEyebrow) {
+      els.pauseEyebrow.textContent =
+        gameMode === "endless" ? "エンドレスコース" : "３ブイコース";
+    }
     if (els.pauseLead) {
-      els.pauseLead.textContent = `現在 ${Math.round(currentDistanceM())} m。再開するか、ここで終了できます。`;
+      els.pauseLead.textContent =
+        gameMode === "endless"
+          ? `現在 ${Math.round(currentDistanceM())} m。再開するか、ここで終了できます。`
+          : "再開するか、ここで終了できます。";
     }
     syncPauseControls();
   }
 
-  function resumeEndless() {
+  function resumeGame() {
     if (!paused || finished) return;
     paused = false;
     running = true;
@@ -2151,13 +2159,13 @@
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
       e.preventDefault();
     }
-    if (e.key === "Escape" && gameMode === "endless") {
+    if (e.key === "Escape") {
       if (paused) {
         e.preventDefault();
-        resumeEndless();
+        resumeGame();
       } else if (running && !finished && !tutorialActive) {
         e.preventDefault();
-        pauseEndless();
+        pauseGame();
       }
     }
   });
@@ -2175,8 +2183,8 @@
   els.changeCourseBtn.addEventListener("click", () => goHome("mode"));
   els.resultEndBtn.addEventListener("click", () => goHome("intro"));
   els.endBtn.addEventListener("click", endCurrentPlay);
-  els.pauseBtn?.addEventListener("click", pauseEndless);
-  els.resumeBtn?.addEventListener("click", resumeEndless);
+  els.pauseBtn?.addEventListener("click", pauseGame);
+  els.resumeBtn?.addEventListener("click", resumeGame);
   els.pauseEndBtn?.addEventListener("click", endFromPause);
   els.tutorialNextBtn.addEventListener("click", advanceTutorial);
   els.resetBtn.addEventListener("click", () => {

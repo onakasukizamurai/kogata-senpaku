@@ -435,7 +435,7 @@ html, body {
   border-radius: 1rem;
 }
 
-#endBtn {
+.helm-actions .btn {
   border-radius: 1rem;
 }
 
