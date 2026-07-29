@@ -333,9 +333,9 @@
         y: SKYTREE_Y,
         side: -1,
         type: "skytree",
-        w: 42,
-        h: 520,
-        tone: 0.85,
+        w: 36,
+        h: 580,
+        tone: 0.9,
       });
     }
   }
@@ -1334,88 +1334,127 @@
   function drawSkytreeFP(p, bw, bh, scene) {
     const x = p.x;
     const baseY = p.y;
-    const topY = p.y - bh;
     const night = scene.windowMode === "night";
-    const body = night ? "rgba(190, 205, 220, 0.92)" : "rgba(236, 242, 248, 0.95)";
-    const edge = night ? "rgba(140, 160, 185, 0.85)" : "rgba(170, 185, 200, 0.9)";
-    const accent = night ? "rgba(255, 170, 90, 0.9)" : "rgba(90, 140, 190, 0.75)";
+    const fill = night ? "rgba(210, 220, 235, 0.94)" : "rgba(248, 250, 252, 0.97)";
+    const stroke = night ? "rgba(120, 145, 175, 0.9)" : "rgba(140, 165, 190, 0.85)";
+    const lattice = night ? "rgba(255, 175, 95, 0.45)" : "rgba(95, 130, 170, 0.45)";
+    const glow = night ? "rgba(255, 165, 70, 0.95)" : "rgba(70, 130, 190, 0.7)";
+    const shaftTop = baseY - bh * 0.72;
+    const tipY = baseY - bh;
 
-    // 脚（広がった基部）
-    ctx.strokeStyle = edge;
-    ctx.lineWidth = Math.max(1, bw * 0.08);
+    // 三角に広がる基部
+    ctx.fillStyle = fill;
     ctx.beginPath();
-    ctx.moveTo(x - bw * 0.55, baseY);
-    ctx.lineTo(x - bw * 0.18, baseY - bh * 0.12);
-    ctx.moveTo(x + bw * 0.55, baseY);
-    ctx.lineTo(x + bw * 0.18, baseY - bh * 0.12);
-    ctx.stroke();
-
-    // 下部シャフト
-    ctx.fillStyle = body;
-    ctx.beginPath();
-    ctx.moveTo(x - bw * 0.28, baseY - bh * 0.1);
-    ctx.lineTo(x - bw * 0.16, baseY - bh * 0.48);
-    ctx.lineTo(x + bw * 0.16, baseY - bh * 0.48);
-    ctx.lineTo(x + bw * 0.28, baseY - bh * 0.1);
+    ctx.moveTo(x - bw * 0.62, baseY);
+    ctx.lineTo(x - bw * 0.22, baseY - bh * 0.14);
+    ctx.lineTo(x + bw * 0.22, baseY - bh * 0.14);
+    ctx.lineTo(x + bw * 0.62, baseY);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = edge;
-    ctx.lineWidth = Math.max(0.8, bw * 0.04);
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = Math.max(1, bw * 0.05);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, baseY);
+    ctx.lineTo(x, baseY - bh * 0.14);
+    ctx.moveTo(x - bw * 0.35, baseY);
+    ctx.lineTo(x - bw * 0.12, baseY - bh * 0.14);
+    ctx.moveTo(x + bw * 0.35, baseY);
+    ctx.lineTo(x + bw * 0.12, baseY - bh * 0.14);
     ctx.stroke();
 
-    // 中間展望台（ふくらみ）
-    const deckY = baseY - bh * 0.52;
-    const deckH = Math.max(3, bh * 0.055);
-    const deckW = bw * 0.42;
-    ctx.fillStyle = night ? "rgba(255, 150, 70, 0.88)" : "rgba(210, 225, 235, 0.98)";
+    // メインシャフト
+    ctx.fillStyle = fill;
     ctx.beginPath();
-    ctx.ellipse(x, deckY, deckW, deckH, 0, 0, Math.PI * 2);
+    ctx.moveTo(x - bw * 0.22, baseY - bh * 0.14);
+    ctx.lineTo(x - bw * 0.13, baseY - bh * 0.48);
+    ctx.lineTo(x + bw * 0.13, baseY - bh * 0.48);
+    ctx.lineTo(x + bw * 0.22, baseY - bh * 0.14);
+    ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = Math.max(1, bw * 0.05);
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = Math.max(0.8, bw * 0.035);
+    ctx.stroke();
+
+    // 格子（X）
+    ctx.strokeStyle = lattice;
+    ctx.lineWidth = Math.max(0.6, bw * 0.03);
+    for (let t = 0; t < 5; t++) {
+      const y0 = baseY - bh * (0.16 + t * 0.06);
+      const y1 = y0 - bh * 0.055;
+      const w0 = bw * (0.2 - t * 0.012);
+      const w1 = bw * (0.18 - t * 0.012);
+      ctx.beginPath();
+      ctx.moveTo(x - w0, y0);
+      ctx.lineTo(x + w1, y1);
+      ctx.moveTo(x + w0, y0);
+      ctx.lineTo(x - w1, y1);
+      ctx.stroke();
+    }
+
+    // 天望デッキ
+    const deckY = baseY - bh * 0.5;
+    const deckRx = bw * 0.48;
+    const deckRy = Math.max(4, bh * 0.048);
+    ctx.fillStyle = night ? "rgba(255, 155, 75, 0.92)" : "rgba(230, 238, 245, 0.98)";
+    ctx.beginPath();
+    ctx.ellipse(x, deckY, deckRx, deckRy, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = glow;
+    ctx.lineWidth = Math.max(1.1, bw * 0.06);
+    ctx.stroke();
+    ctx.strokeStyle = night ? "rgba(255, 210, 140, 0.7)" : "rgba(110, 150, 190, 0.55)";
+    ctx.lineWidth = Math.max(0.8, bw * 0.04);
+    ctx.beginPath();
+    ctx.ellipse(x, deckY - deckRy * 0.35, deckRx * 0.85, deckRy * 0.45, 0, 0, Math.PI * 2);
     ctx.stroke();
 
     // 上部シャフト
-    ctx.fillStyle = body;
+    ctx.fillStyle = fill;
     ctx.beginPath();
-    ctx.moveTo(x - bw * 0.14, deckY - deckH);
-    ctx.lineTo(x - bw * 0.06, baseY - bh * 0.78);
-    ctx.lineTo(x + bw * 0.06, baseY - bh * 0.78);
-    ctx.lineTo(x + bw * 0.14, deckY - deckH);
+    ctx.moveTo(x - bw * 0.12, deckY - deckRy);
+    ctx.lineTo(x - bw * 0.055, shaftTop);
+    ctx.lineTo(x + bw * 0.055, shaftTop);
+    ctx.lineTo(x + bw * 0.12, deckY - deckRy);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = edge;
-    ctx.lineWidth = Math.max(0.7, bw * 0.035);
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = Math.max(0.7, bw * 0.03);
     ctx.stroke();
 
-    // 上部展望台
-    const topDeckY = baseY - bh * 0.8;
-    ctx.fillStyle = night ? "rgba(255, 200, 110, 0.9)" : "rgba(200, 215, 230, 0.95)";
+    // 天望回廊
+    const galleryY = baseY - bh * 0.68;
+    ctx.fillStyle = night ? "rgba(255, 190, 100, 0.9)" : "rgba(215, 228, 240, 0.96)";
     ctx.beginPath();
-    ctx.ellipse(x, topDeckY, bw * 0.2, Math.max(2, bh * 0.025), 0, 0, Math.PI * 2);
+    ctx.ellipse(x, galleryY, bw * 0.22, Math.max(2.2, bh * 0.022), 0, 0, Math.PI * 2);
     ctx.fill();
-
-    // アンテナ
-    ctx.strokeStyle = night ? "rgba(255, 220, 160, 0.95)" : "rgba(150, 165, 180, 0.95)";
-    ctx.lineWidth = Math.max(1, bw * 0.06);
-    ctx.beginPath();
-    ctx.moveTo(x, topDeckY);
-    ctx.lineTo(x, topY);
+    ctx.strokeStyle = glow;
+    ctx.lineWidth = Math.max(0.8, bw * 0.04);
     ctx.stroke();
-    ctx.fillStyle = night ? "#ffd27a" : "#6aa3d4";
-    ctx.beginPath();
-    ctx.arc(x, topY, Math.max(1.2, bw * 0.08), 0, Math.PI * 2);
-    ctx.fill();
 
-    // 格子の簡易表現
-    ctx.strokeStyle = night ? "rgba(255, 180, 100, 0.25)" : "rgba(120, 140, 160, 0.28)";
-    ctx.lineWidth = 1;
-    for (let t = 0.18; t < 0.48; t += 0.08) {
+    // 長いアンテナ
+    ctx.strokeStyle = night ? "rgba(255, 225, 170, 0.95)" : "rgba(155, 175, 195, 0.95)";
+    ctx.lineWidth = Math.max(1.2, bw * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(x, shaftTop);
+    ctx.lineTo(x, tipY + bh * 0.04);
+    ctx.stroke();
+    ctx.lineWidth = Math.max(0.8, bw * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(x, tipY + bh * 0.04);
+    ctx.lineTo(x, tipY);
+    ctx.stroke();
+    ctx.fillStyle = night ? "#ffd78a" : "#5a9fd4";
+    ctx.beginPath();
+    ctx.arc(x, tipY, Math.max(1.3, bw * 0.07), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = night ? "rgba(255, 200, 120, 0.8)" : "rgba(120, 155, 185, 0.75)";
+    ctx.lineWidth = Math.max(0.7, bw * 0.03);
+    for (const t of [0.78, 0.86, 0.93]) {
       const yy = baseY - bh * t;
-      const half = bw * (0.26 - t * 0.2);
       ctx.beginPath();
-      ctx.moveTo(x - half, yy);
-      ctx.lineTo(x + half, yy);
+      ctx.moveTo(x - bw * 0.07, yy);
+      ctx.lineTo(x + bw * 0.07, yy);
       ctx.stroke();
     }
   }
