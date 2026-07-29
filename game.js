@@ -1336,119 +1336,147 @@
     const baseY = p.y;
     const tipY = baseY - bh;
     const night = scene.windowMode === "night";
-    // 実寸比に近い配置: 天望デッキ350/634、天望回廊450/634
-    const deckT = 350 / 634;
-    const galleryT = 450 / 634;
-    const bodyTopT = 0.74;
-    const deckY = baseY - bh * deckT;
-    const galleryY = baseY - bh * galleryT;
-    const bodyTopY = baseY - bh * bodyTopT;
+    // いらすとや風: 細い格子塔 + 広がる台形の展望台2つ + 縞アンテナ
+    const shaft = night ? "#b8c8d8" : "#d7e6f0";
+    const grid = night ? "#6a8098" : "#8aa3b8";
+    const deck = night ? "#5a6570" : "#6e7a86";
+    const antenna = night ? "#c8d4e0" : "#e4eef5";
+    const antennaBand = night ? "#7a8fa5" : "#9aafc0";
 
-    const body = night ? "#c8d7e8" : "#eef7fc";
-    const line = night ? "#6f8aaa" : "#5a9ec4";
-    const deckFill = night ? "#ffb56a" : "#8ec8e6";
+    // 高さ配分（足元→先端）
+    const yShaftTop = baseY - bh * 0.48; // 第1展望台下
+    const yDeck1Top = baseY - bh * 0.56;
+    const yMidTop = baseY - bh * 0.64; // 第2展望台下
+    const yDeck2Top = baseY - bh * 0.7;
+    const yAntBase = yDeck2Top;
 
-    // 高さ t(0=足元,1=先端) での半幅 — 一本の細い三角
-    const halfAt = (t) => {
-      if (t <= 0) return bw * 0.55;
-      if (t >= bodyTopT) return bw * 0.035;
-      return bw * (0.55 - (0.55 - 0.045) * (t / bodyTopT));
+    const halfAt = (y) => {
+      const t = (baseY - y) / (baseY - yShaftTop);
+      return bw * (0.5 - 0.32 * clamp(t, 0, 1));
     };
 
-    // 本体（連続した細長い三角）
-    ctx.fillStyle = body;
+    // メインシャフト（細長いテーパー）
+    const baseHalf = bw * 0.5;
+    const shaftTopHalf = bw * 0.18;
+    ctx.fillStyle = shaft;
     ctx.beginPath();
-    ctx.moveTo(x - halfAt(0), baseY);
-    ctx.lineTo(x - halfAt(bodyTopT), bodyTopY);
-    ctx.lineTo(x + halfAt(bodyTopT), bodyTopY);
-    ctx.lineTo(x + halfAt(0), baseY);
+    ctx.moveTo(x - baseHalf, baseY);
+    ctx.lineTo(x - shaftTopHalf, yShaftTop);
+    ctx.lineTo(x + shaftTopHalf, yShaftTop);
+    ctx.lineTo(x + baseHalf, baseY);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(1, bw * 0.045);
+    ctx.strokeStyle = grid;
+    ctx.lineWidth = Math.max(0.8, bw * 0.04);
     ctx.stroke();
 
-    // 中央の縦線
+    // 矩形格子
+    ctx.lineWidth = Math.max(0.55, bw * 0.022);
+    const rows = 8;
+    for (let i = 1; i < rows; i++) {
+      const t = i / rows;
+      const yy = baseY - (baseY - yShaftTop) * t;
+      const hw = halfAt(yy) * 0.95;
+      ctx.beginPath();
+      ctx.moveTo(x - hw, yy);
+      ctx.lineTo(x + hw, yy);
+      ctx.stroke();
+    }
+    for (let c = -2; c <= 2; c++) {
+      if (c === 0) continue;
+      const f = c / 2.6;
+      ctx.beginPath();
+      ctx.moveTo(x + baseHalf * f * 0.85, baseY);
+      ctx.lineTo(x + shaftTopHalf * f * 0.7, yShaftTop);
+      ctx.stroke();
+    }
     ctx.beginPath();
     ctx.moveTo(x, baseY);
-    ctx.lineTo(x, bodyTopY);
+    ctx.lineTo(x, yShaftTop);
     ctx.stroke();
 
-    // 菱形格子（本体の中だけ・本数固定）
+    // 第1展望台（上に広がる台形＝カップ型）
+    const d1Bot = shaftTopHalf * 1.15;
+    const d1Top = bw * 0.62;
+    ctx.fillStyle = deck;
+    ctx.beginPath();
+    ctx.moveTo(x - d1Bot, yShaftTop);
+    ctx.lineTo(x - d1Top, yDeck1Top);
+    ctx.lineTo(x + d1Top, yDeck1Top);
+    ctx.lineTo(x + d1Bot, yShaftTop);
+    ctx.closePath();
+    ctx.fill();
+    // 窓の縦線
+    ctx.strokeStyle = night ? "#3a4550" : "#555e68";
     ctx.lineWidth = Math.max(0.6, bw * 0.025);
-    ctx.globalAlpha = 0.8;
-    const steps = 7;
-    for (let i = 1; i < steps; i++) {
-      const t = (i / steps) * bodyTopT;
-      const yy = baseY - bh * t;
-      const hw = halfAt(t) * 0.92;
+    for (let i = -3; i <= 3; i++) {
+      const t = i / 3.5;
+      const x0 = x + d1Bot * t;
+      const x1 = x + d1Top * t;
+      ctx.beginPath();
+      ctx.moveTo(x0, yShaftTop);
+      ctx.lineTo(x1, yDeck1Top);
+      ctx.stroke();
+    }
+
+    // 中間シャフト
+    const midBot = d1Top * 0.28;
+    const midTop = bw * 0.12;
+    ctx.fillStyle = shaft;
+    ctx.beginPath();
+    ctx.moveTo(x - midBot, yDeck1Top);
+    ctx.lineTo(x - midTop, yMidTop);
+    ctx.lineTo(x + midTop, yMidTop);
+    ctx.lineTo(x + midBot, yDeck1Top);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = grid;
+    ctx.lineWidth = Math.max(0.5, bw * 0.02);
+    ctx.stroke();
+    for (let i = 1; i <= 2; i++) {
+      const t = i / 3;
+      const yy = yDeck1Top - (yDeck1Top - yMidTop) * t;
+      const hw = midBot + (midTop - midBot) * t;
       ctx.beginPath();
       ctx.moveTo(x - hw, yy);
       ctx.lineTo(x + hw, yy);
       ctx.stroke();
     }
-    for (let i = 0; i < 6; i++) {
-      const t0 = (i / 6) * bodyTopT;
-      const t1 = ((i + 1) / 6) * bodyTopT;
-      const y0 = baseY - bh * t0;
-      const y1 = baseY - bh * t1;
-      const w0 = halfAt(t0) * 0.9;
-      const w1 = halfAt(t1) * 0.9;
+
+    // 第2展望台（小さめのカップ）
+    const d2Bot = midTop * 1.2;
+    const d2Top = bw * 0.32;
+    ctx.fillStyle = deck;
+    ctx.beginPath();
+    ctx.moveTo(x - d2Bot, yMidTop);
+    ctx.lineTo(x - d2Top, yDeck2Top);
+    ctx.lineTo(x + d2Top, yDeck2Top);
+    ctx.lineTo(x + d2Bot, yMidTop);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = night ? "#3a4550" : "#555e68";
+    ctx.lineWidth = Math.max(0.5, bw * 0.02);
+    for (let i = -2; i <= 2; i++) {
+      const t = i / 2.5;
       ctx.beginPath();
-      ctx.moveTo(x - w0, y0);
-      ctx.lineTo(x + w1, y1);
-      ctx.moveTo(x + w0, y0);
-      ctx.lineTo(x - w1, y1);
+      ctx.moveTo(x + d2Bot * t, yMidTop);
+      ctx.lineTo(x + d2Top * t, yDeck2Top);
       ctx.stroke();
     }
-    ctx.globalAlpha = 1;
 
-    // 天望デッキ（本体よりはっきり張り出す円）
-    const localW = halfAt(deckT);
-    const deckR = Math.max(localW * 2.1, bw * 0.42);
-    ctx.fillStyle = deckFill;
-    ctx.beginPath();
-    ctx.ellipse(x, deckY, deckR, Math.max(3.5, deckR * 0.55), 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(1.2, bw * 0.05);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(x, deckY, deckR * 0.7, Math.max(2, deckR * 0.28), 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // 天望回廊（小さめ）
-    const gR = Math.max(halfAt(galleryT) * 2.4, bw * 0.18);
-    ctx.fillStyle = deckFill;
-    ctx.beginPath();
-    ctx.ellipse(x, galleryY, gR, Math.max(2, gR * 0.45), 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    // 長いアンテナ（全体の約1/4）
-    ctx.strokeStyle = line;
-    ctx.lineWidth = Math.max(1.3, bw * 0.07);
-    ctx.beginPath();
-    ctx.moveTo(x, bodyTopY);
-    ctx.lineTo(x, tipY + bh * 0.02);
-    ctx.stroke();
-    ctx.lineWidth = Math.max(0.8, bw * 0.035);
-    ctx.beginPath();
-    ctx.moveTo(x, tipY + bh * 0.02);
-    ctx.lineTo(x, tipY);
-    ctx.stroke();
-    for (const t of [0.8, 0.88, 0.95]) {
-      const yy = baseY - bh * t;
-      const hw = bw * 0.06 * (1.1 - t);
-      ctx.beginPath();
-      ctx.moveTo(x - hw, yy);
-      ctx.lineTo(x + hw, yy);
-      ctx.stroke();
+    // 縞模様のアンテナ
+    const antW = Math.max(1.2, bw * 0.07);
+    const bands = 7;
+    const antH = yAntBase - tipY;
+    for (let i = 0; i < bands; i++) {
+      const y0 = yAntBase - (antH * i) / bands;
+      const y1 = yAntBase - (antH * (i + 1)) / bands;
+      ctx.fillStyle = i % 2 === 0 ? antenna : antennaBand;
+      ctx.fillRect(x - antW / 2, y1, antW, y0 - y1);
     }
-    ctx.fillStyle = night ? "#ffd27a" : "#5bc4ef";
-    ctx.beginPath();
-    ctx.arc(x, tipY, Math.max(1.2, bw * 0.07), 0, Math.PI * 2);
-    ctx.fill();
+    ctx.strokeStyle = grid;
+    ctx.lineWidth = Math.max(0.6, bw * 0.02);
+    ctx.strokeRect(x - antW / 2, tipY, antW, antH);
   }
 
   function updateFireworks(dt, scene, w, horizon) {
