@@ -68,6 +68,8 @@
   const COURSE_X = 0;
   const START_Y = 420;
   const RIVER_HALF = 520;
+  const SKYTREE_Y = START_Y - 980;
+  const SKYTREE_X = COURSE_X - (RIVER_HALF + 380);
   const MAX_RUDDER = 35;
   const MAX_WHEEL = 540;
   const MAX_SPEED = 9.5;
@@ -287,6 +289,11 @@
         const r = hash01(i * 17 + side * 9 + y * 0.01);
         const type = r < 0.2 ? "tower" : r < 0.45 ? "factory" : "building";
         const inset = 190 + hash01(i * 3.1 + side) * 120;
+        // 左岸スカイツリー付近は通常ビルを抑える
+        if (side < 0 && Math.abs(y - SKYTREE_Y) < 160) {
+          i += 1;
+          continue;
+        }
         bankLandmarks.push({
           x: COURSE_X + side * (RIVER_HALF + inset),
           y,
@@ -301,6 +308,10 @@
       if (i % 4 === 0) {
         for (const side of [-1, 1]) {
           const r = hash01(i * 23 + side);
+          if (side < 0 && Math.abs(y - 45 - SKYTREE_Y) < 160) {
+            i += 1;
+            continue;
+          }
           bankLandmarks.push({
             x: COURSE_X + side * (RIVER_HALF + 280 + r * 140),
             y: y - 45,
@@ -313,6 +324,19 @@
           i += 1;
         }
       }
+    }
+
+    // 左岸に東京スカイツリー（固定）
+    if (SKYTREE_Y < yStart + 200 && SKYTREE_Y > yEnd - 200) {
+      bankLandmarks.push({
+        x: SKYTREE_X,
+        y: SKYTREE_Y,
+        side: -1,
+        type: "skytree",
+        w: 42,
+        h: 520,
+        tone: 0.85,
+      });
     }
   }
 
@@ -1240,9 +1264,12 @@
 
       const items = bankLandmarks
         .map((b) => ({ b, loc: toLocal(b.x, b.y) }))
-        .filter((it) => it.loc.forward > view.near && it.loc.forward < Math.min(view.far, 1600))
+        .filter((it) => {
+          const maxFwd = it.b.type === "skytree" ? Math.min(view.far, 3200) : Math.min(view.far, 1600);
+          return it.loc.forward > view.near && it.loc.forward < maxFwd;
+        })
         .sort((a, c) => c.loc.forward - a.loc.forward)
-        .slice(0, 40);
+        .slice(0, 42);
 
       for (const { b, loc } of items) {
         const p = project(loc.forward, loc.right, view);
@@ -1254,7 +1281,9 @@
         const shade = Math.floor((40 + b.tone * 70) * scene.buildingShade);
         const col = `rgb(${shade + 10}, ${shade + 18}, ${shade + 28})`;
 
-        if (b.type === "tower") {
+        if (b.type === "skytree") {
+          drawSkytreeFP(p, bw, bh, scene);
+        } else if (b.type === "tower") {
           ctx.strokeStyle = `rgb(${shade + 30}, ${shade + 35}, ${shade + 45})`;
           ctx.lineWidth = Math.max(1.2, 2 * p.scale);
           ctx.beginPath();
@@ -1300,6 +1329,95 @@
         }
       }
     });
+  }
+
+  function drawSkytreeFP(p, bw, bh, scene) {
+    const x = p.x;
+    const baseY = p.y;
+    const topY = p.y - bh;
+    const night = scene.windowMode === "night";
+    const body = night ? "rgba(190, 205, 220, 0.92)" : "rgba(236, 242, 248, 0.95)";
+    const edge = night ? "rgba(140, 160, 185, 0.85)" : "rgba(170, 185, 200, 0.9)";
+    const accent = night ? "rgba(255, 170, 90, 0.9)" : "rgba(90, 140, 190, 0.75)";
+
+    // 脚（広がった基部）
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = Math.max(1, bw * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(x - bw * 0.55, baseY);
+    ctx.lineTo(x - bw * 0.18, baseY - bh * 0.12);
+    ctx.moveTo(x + bw * 0.55, baseY);
+    ctx.lineTo(x + bw * 0.18, baseY - bh * 0.12);
+    ctx.stroke();
+
+    // 下部シャフト
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.moveTo(x - bw * 0.28, baseY - bh * 0.1);
+    ctx.lineTo(x - bw * 0.16, baseY - bh * 0.48);
+    ctx.lineTo(x + bw * 0.16, baseY - bh * 0.48);
+    ctx.lineTo(x + bw * 0.28, baseY - bh * 0.1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = Math.max(0.8, bw * 0.04);
+    ctx.stroke();
+
+    // 中間展望台（ふくらみ）
+    const deckY = baseY - bh * 0.52;
+    const deckH = Math.max(3, bh * 0.055);
+    const deckW = bw * 0.42;
+    ctx.fillStyle = night ? "rgba(255, 150, 70, 0.88)" : "rgba(210, 225, 235, 0.98)";
+    ctx.beginPath();
+    ctx.ellipse(x, deckY, deckW, deckH, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = Math.max(1, bw * 0.05);
+    ctx.stroke();
+
+    // 上部シャフト
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.moveTo(x - bw * 0.14, deckY - deckH);
+    ctx.lineTo(x - bw * 0.06, baseY - bh * 0.78);
+    ctx.lineTo(x + bw * 0.06, baseY - bh * 0.78);
+    ctx.lineTo(x + bw * 0.14, deckY - deckH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = Math.max(0.7, bw * 0.035);
+    ctx.stroke();
+
+    // 上部展望台
+    const topDeckY = baseY - bh * 0.8;
+    ctx.fillStyle = night ? "rgba(255, 200, 110, 0.9)" : "rgba(200, 215, 230, 0.95)";
+    ctx.beginPath();
+    ctx.ellipse(x, topDeckY, bw * 0.2, Math.max(2, bh * 0.025), 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // アンテナ
+    ctx.strokeStyle = night ? "rgba(255, 220, 160, 0.95)" : "rgba(150, 165, 180, 0.95)";
+    ctx.lineWidth = Math.max(1, bw * 0.06);
+    ctx.beginPath();
+    ctx.moveTo(x, topDeckY);
+    ctx.lineTo(x, topY);
+    ctx.stroke();
+    ctx.fillStyle = night ? "#ffd27a" : "#6aa3d4";
+    ctx.beginPath();
+    ctx.arc(x, topY, Math.max(1.2, bw * 0.08), 0, Math.PI * 2);
+    ctx.fill();
+
+    // 格子の簡易表現
+    ctx.strokeStyle = night ? "rgba(255, 180, 100, 0.25)" : "rgba(120, 140, 160, 0.28)";
+    ctx.lineWidth = 1;
+    for (let t = 0.18; t < 0.48; t += 0.08) {
+      const yy = baseY - bh * t;
+      const half = bw * (0.26 - t * 0.2);
+      ctx.beginPath();
+      ctx.moveTo(x - half, yy);
+      ctx.lineTo(x + half, yy);
+      ctx.stroke();
+    }
   }
 
   function updateFireworks(dt, scene, w, horizon) {
