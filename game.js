@@ -35,6 +35,7 @@
     pauseEyebrow: document.getElementById("pauseEyebrow"),
     startPracticeBtn: document.getElementById("startPracticeBtn"),
     startEndlessBtn: document.getElementById("startEndlessBtn"),
+    startFreeBtn: document.getElementById("startFreeBtn"),
     retryBtn: document.getElementById("retryBtn"),
     changeCourseBtn: document.getElementById("changeCourseBtn"),
     resultEndBtn: document.getElementById("resultEndBtn"),
@@ -74,6 +75,7 @@
   const MAX_WHEEL = 540;
   const MAX_SPEED = 9.5;
   const ENDLESS_BEST_KEY = "smallcraft-endless-best-m";
+  const FREE_BEST_KEY = "smallcraft-free-best-m";
   const TUTORIAL_KEY = "smallcraft-tutorial-done";
 
   const keys = new Set();
@@ -83,10 +85,11 @@
   let lastTs = 0;
   let elapsed = 0;
   let dpr = 1;
-  let gameMode = "practice"; // "practice" | "endless"
+  let gameMode = "practice"; // "practice" | "endless" | "free"
   let failReason = null;
   let distanceM = 0;
   let bestEndlessM = 0;
+  let bestFreeM = 0;
   let tutorialActive = false;
   let tutorialStep = 0;
   let portraitStartOk = true;
@@ -94,6 +97,34 @@
     bestEndlessM = Number(localStorage.getItem(ENDLESS_BEST_KEY) || 0) || 0;
   } catch (_) {
     bestEndlessM = 0;
+  }
+  try {
+    bestFreeM = Number(localStorage.getItem(FREE_BEST_KEY) || 0) || 0;
+  } catch (_) {
+    bestFreeM = 0;
+  }
+
+  function isOpenCourse() {
+    return gameMode === "endless" || gameMode === "free";
+  }
+
+  function bestDistanceM() {
+    return gameMode === "free" ? bestFreeM : bestEndlessM;
+  }
+
+  function setBestDistanceM(value) {
+    if (gameMode === "free") bestFreeM = value;
+    else bestEndlessM = value;
+  }
+
+  function bestDistanceKey() {
+    return gameMode === "free" ? FREE_BEST_KEY : ENDLESS_BEST_KEY;
+  }
+
+  function courseLabel() {
+    if (gameMode === "free") return "自由走行コース";
+    if (gameMode === "endless") return "エンドレスコース";
+    return "３ブイコース";
   }
 
   const boat = {
@@ -138,11 +169,11 @@
   }
 
   function firstBuoyOffset() {
-    return gameMode === "endless" ? ENDLESS_FIRST_BUOY_OFFSET : FIRST_BUOY_OFFSET;
+    return isOpenCourse() ? ENDLESS_FIRST_BUOY_OFFSET : FIRST_BUOY_OFFSET;
   }
 
   function sceneryPhaseProgress() {
-    if (gameMode !== "endless") return { from: 0, to: 0, t: 0 };
+    if (!isOpenCourse()) return { from: 0, to: 0, t: 0 };
     const u = Math.max(0, (START_Y - firstBuoyOffset() - boat.y) / BUOY_SPACING);
     const boundary = Math.floor(u / SCENERY_EVERY) * SCENERY_EVERY;
     if (boundary > 0 && u < boundary + 1) {
@@ -266,7 +297,7 @@
   function getSceneryCached() {
     const prog = sceneryPhaseProgress();
     const key =
-      gameMode !== "endless"
+      gameMode === "practice"
         ? "practice-day"
         : `${prog.from}:${prog.to}:${Math.floor(prog.t * 12)}`;
     if (sceneryCache && sceneryCacheKey === key) return sceneryCache;
@@ -361,7 +392,7 @@
   function buildCourse() {
     buoys = [];
     nextBuoySeq = 0;
-    const count = gameMode === "endless" ? ENDLESS_AHEAD : BUOY_COUNT;
+    const count = isOpenCourse() ? ENDLESS_AHEAD : BUOY_COUNT;
     for (let i = 0; i < count; i++) {
       buoys.push(makeBuoy(nextBuoySeq++));
     }
@@ -370,7 +401,7 @@
   }
 
   function ensureEndlessBuoys() {
-    if (gameMode !== "endless" || finished) return;
+    if (!isOpenCourse() || finished) return;
     if (!Number.isFinite(nextIndex) || nextIndex < 0) nextIndex = 0;
     if (nextIndex > buoys.length) nextIndex = buoys.length;
 
@@ -575,7 +606,7 @@
   }
 
   function goalY() {
-    if (gameMode === "endless") {
+    if (isOpenCourse()) {
       return boat.y - 1200;
     }
     if (!buoys.length) return START_Y;
@@ -583,7 +614,7 @@
   }
 
   function towerWorldY() {
-    if (gameMode === "endless") return boat.y - 1800;
+    if (isOpenCourse()) return boat.y - 1800;
     return goalY() - 1400;
   }
 
@@ -638,6 +669,7 @@
               finishRun();
               return;
             }
+            if (gameMode === "free") passes += 1;
           } else if (lateral > PASS_GATE) {
             widePasses += 1;
             passes += 1;
@@ -671,19 +703,20 @@
       goalCenterOffset = Math.abs(boat.x - COURSE_X);
     }
 
-    if (gameMode === "endless") {
-      const isNewBest = distanceM > bestEndlessM;
+    if (isOpenCourse()) {
+      const best = bestDistanceM();
+      const isNewBest = distanceM > best;
       if (isNewBest) {
-        bestEndlessM = distanceM;
+        setBestDistanceM(distanceM);
         try {
-          localStorage.setItem(ENDLESS_BEST_KEY, String(Math.round(bestEndlessM)));
+          localStorage.setItem(bestDistanceKey(), String(Math.round(distanceM)));
         } catch (_) {
           /* ignore quota / private mode */
         }
       }
 
       let title = "記録更新！";
-      let eyebrow = "エンドレスコース";
+      let eyebrow = courseLabel();
       let lead = "自己ベストを更新しました。もう一度挑戦してみましょう。";
       if (failReason === "bank") {
         title = isNewBest ? "岸接触・記録更新" : "岸に接触";
@@ -705,13 +738,16 @@
           : "指定と逆の側を通ってしまいました。次の通過側を先に確認しましょう。";
       } else if (failReason === "quit") {
         title = isNewBest ? "途中終了・記録更新" : "途中終了";
-        eyebrow = "エンドレスコース";
+        eyebrow = courseLabel();
         lead = isNewBest
           ? "途中終了でしたが、自己ベストを更新しました。"
           : "プレイを終了しました。自己ベストを目指して再挑戦できます。";
       } else if (!isNewBest) {
-        title = "エンドレスコース終了";
-        lead = "失敗するまでどこまで進めるかを競うモードです。自己ベストを目指しましょう。";
+        title = `${courseLabel()}終了`;
+        lead =
+          gameMode === "free"
+            ? "岸にぶつからない限り走り続けられます。距離を伸ばしましょう。"
+            : "失敗するまでどこまで進めるかを競うモードです。自己ベストを目指しましょう。";
       }
 
       els.resultEyebrow.textContent = eyebrow;
@@ -724,7 +760,7 @@
         els.scoreBreakdown.classList.add("hidden");
       }
       els.scoreList.innerHTML = `
-        <div><dt>自己ベスト</dt><dd>${Math.round(bestEndlessM)} m</dd></div>
+        <div><dt>自己ベスト</dt><dd>${Math.round(bestDistanceM())} m</dd></div>
         <div><dt>通過ブイ</dt><dd>${passes} 本</dd></div>
         <div><dt>所要時間</dt><dd>${elapsed.toFixed(1)} 秒</dd></div>
       `;
@@ -870,7 +906,7 @@
         : "var(--text)";
     els.timeVal.textContent = elapsed.toFixed(1);
 
-    if (gameMode === "endless") {
+    if (isOpenCourse()) {
       els.passHudLabel.textContent = "距離";
       els.passCount.textContent = String(Math.round(distanceM));
       els.passUnit.textContent = "m";
@@ -1019,7 +1055,7 @@
       const markers = [{ y: START_Y + 40, label: "START", color: "rgba(240, 162, 2, 0.85)" }];
       if (gameMode === "practice") {
         markers.push({ y: goalY(), label: "GOAL", color: "rgba(62, 207, 142, 0.9)" });
-      } else if (gameMode === "endless") {
+      } else if (isOpenCourse()) {
         const kmColor = "rgba(62, 207, 142, 0.82)";
         for (const m of endlessKmMarkerDistances()) {
           markers.push({ y: START_Y - m, label: `${m} m`, color: kmColor });
@@ -1791,7 +1827,7 @@
     drawLineMarker(START_Y + 40, "rgba(240, 162, 2, 0.9)", "START");
     if (gameMode === "practice") {
       drawLineMarker(goalY(), "rgba(62, 207, 142, 0.9)", "GOAL");
-    } else if (gameMode === "endless") {
+    } else if (isOpenCourse()) {
       const kmColor = "rgba(62, 207, 142, 0.85)";
       for (const m of endlessKmMarkerDistances()) {
         drawLineMarker(START_Y - m, kmColor, `${m} m`);
@@ -2243,7 +2279,7 @@
   }
 
   function startGame(mode) {
-    if (mode === "practice" || mode === "endless") gameMode = mode;
+    if (mode === "practice" || mode === "endless" || mode === "free") gameMode = mode;
     portraitStartOk = false;
     syncLandscapeRequirement();
     hideTutorial();
@@ -2286,14 +2322,12 @@
     draggingWheel = false;
     wheelWrap.classList.remove("dragging");
     if (els.pauseEyebrow) {
-      els.pauseEyebrow.textContent =
-        gameMode === "endless" ? "エンドレスコース" : "３ブイコース";
+      els.pauseEyebrow.textContent = courseLabel();
     }
     if (els.pauseLead) {
-      els.pauseLead.textContent =
-        gameMode === "endless"
-          ? `現在 ${Math.round(currentDistanceM())} m。再開するか、ここで終了できます。`
-          : "再開するか、ここで終了できます。";
+      els.pauseLead.textContent = isOpenCourse()
+        ? `現在 ${Math.round(currentDistanceM())} m。再開するか、ここで終了できます。`
+        : "再開するか、ここで終了できます。";
     }
     syncPauseControls();
   }
@@ -2392,6 +2426,7 @@
   els.startBackBtn.addEventListener("click", showStartIntro);
   els.startPracticeBtn.addEventListener("click", () => startGame("practice"));
   els.startEndlessBtn.addEventListener("click", () => startGame("endless"));
+  els.startFreeBtn?.addEventListener("click", () => startGame("free"));
   els.retryBtn.addEventListener("click", () => startGame(gameMode));
   els.changeCourseBtn.addEventListener("click", () => goHome("mode"));
   els.resultEndBtn.addEventListener("click", () => goHome("intro"));

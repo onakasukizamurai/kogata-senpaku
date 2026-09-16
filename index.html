@@ -82,7 +82,8 @@
               <li>右のハンドルをドラッグ、または ← → で操舵</li>
               <li>スロットル、または ↑ ↓ で速力</li>
               <li>３ブイコース：試験形式のブイ通過を採点（岸接触は0点）</li>
-              <li>エンドレスコース：失敗するまで進んだ距離を競う</li>
+              <li>エンドレスコース：接触・逆側・岸で終了し、距離を競う</li>
+              <li>自由走行コース：左右や接触はOK。岸にぶつかるまで走行</li>
             </ul>
             <p class="seo-note">正式な試験コースや採点の完全再現ではありません。ボート免許・小型船舶免許の取得前に、ブイ通過や蛇行のイメージ確認としてご利用ください。</p>
           </div>
@@ -92,8 +93,9 @@
             <div class="mode-actions mode-actions-simple">
               <button type="button" class="btn primary" id="startPracticeBtn">３ブイコース（試験の形式）</button>
               <button type="button" class="btn secondary" id="startEndlessBtn">エンドレスコース</button>
+              <button type="button" class="btn secondary" id="startFreeBtn">自由走行コース</button>
             </div>
-            <p class="mode-note">エンドレスコースは処理が重く、スマホだと途中で落ちることがあります。</p>
+            <p class="mode-note">エンドレス／自由走行は処理が重く、スマホだと途中で落ちることがあります。</p>
             <button type="button" class="btn ghost" id="startBackBtn">戻る</button>
           </div>
         </div>
@@ -148,6 +150,6 @@
       </aside>
     </div>
   </div>
-  <script src="game.js?v=52"></script>
+  <script src="game.js?v=53"></script>
 </body>
 </html>
