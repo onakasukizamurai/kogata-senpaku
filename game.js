@@ -47,6 +47,7 @@
     scoreBreakdown: document.getElementById("scoreBreakdown"),
     scoreList: document.getElementById("scoreList"),
     resultPanel: document.getElementById("resultPanel"),
+    playToast: document.getElementById("playToast"),
     tutorialOverlay: document.getElementById("tutorialOverlay"),
     tutorialSpotlight: document.getElementById("tutorialSpotlight"),
     tutorialStepLabel: document.getElementById("tutorialStepLabel"),
@@ -122,9 +123,27 @@
   }
 
   function courseLabel() {
-    if (gameMode === "free") return "自由走行コース";
+    if (gameMode === "free") return "自主練";
     if (gameMode === "endless") return "エンドレスコース";
     return "３ブイコース";
+  }
+
+  let toastTimer = 0;
+  function showPlayToast(message, kind = "") {
+    const el = els.playToast;
+    if (!el) return;
+    el.textContent = message;
+    el.classList.remove("hidden", "toast-contact", "toast-wrong");
+    if (kind) el.classList.add(kind);
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      el.classList.add("hidden");
+    }, 1800);
+  }
+
+  function hidePlayToast() {
+    window.clearTimeout(toastTimer);
+    els.playToast?.classList.add("hidden");
   }
 
   const boat = {
@@ -470,6 +489,7 @@
     buildCourse();
     els.throttle.value = "35";
     els.throttleLabel.textContent = "35%";
+    hidePlayToast();
     updateHud();
     drawWheel();
     if (!keepOverlay) {
@@ -649,6 +669,9 @@
           finishRun();
           return;
         }
+        if (gameMode === "free") {
+          showPlayToast("ブイに接触", "toast-contact");
+        }
       }
 
       if (!b.passed && nextIndex === i) {
@@ -669,7 +692,13 @@
               finishRun();
               return;
             }
-            if (gameMode === "free") passes += 1;
+            if (gameMode === "free") {
+              passes += 1;
+              showPlayToast(
+                `左右間違い（指定は${sideLabel(b.side)}）`,
+                "toast-wrong"
+              );
+            }
           } else if (lateral > PASS_GATE) {
             widePasses += 1;
             passes += 1;
@@ -697,6 +726,7 @@
     paused = false;
     els.pauseOverlay?.classList.add("hidden");
     distanceM = currentDistanceM();
+    hidePlayToast();
     syncPauseControls();
 
     if (goalCenterOffset == null) {
